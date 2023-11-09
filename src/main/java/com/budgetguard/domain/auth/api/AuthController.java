@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.budgetguard.domain.auth.application.AuthService;
+import com.budgetguard.domain.auth.dto.request.TokenRequest;
+import com.budgetguard.domain.auth.dto.response.TokenResponse;
+import com.budgetguard.domain.member.dto.request.MemberLoginRequestParam;
 import com.budgetguard.domain.member.dto.request.MemberSignupRequestParam;
 import com.budgetguard.global.format.ApiResponse;
 
@@ -35,5 +38,44 @@ public class AuthController {
 		Long memberId = authService.signup(param);
 		return ResponseEntity.status(CREATED)
 			.body(ApiResponse.toSuccessForm(memberId));
+	}
+
+	/**
+	 * 로그인
+	 *
+	 * @param param 로그인 입력 데이터
+	 * @return 200, 로그인 성공 시 생성된 accessToken, refreshToken을 담은 tokenResponse
+	 */
+	@PostMapping("/login")
+	public ResponseEntity<ApiResponse> login(@RequestBody MemberLoginRequestParam param) {
+		TokenResponse tokenResponse = authService.login(param);
+		return ResponseEntity.ok()
+			.body(ApiResponse.toSuccessForm(tokenResponse));
+	}
+
+	/**
+	 * 토큰 재발급
+	 *
+	 * @param param accessToken, refreshToken
+	 * @return 200, 재발급된 accessToken, refreshToken을 담은 tokenResponse
+	 */
+	@PostMapping("/reissue")
+	public ResponseEntity<ApiResponse> reissue(@RequestBody TokenRequest param) {
+		TokenResponse tokenResponse = authService.reissue(param);
+		return ResponseEntity.ok()
+			.body(ApiResponse.toSuccessForm(tokenResponse));
+	}
+
+	/**
+	 * 로그아웃
+	 *
+	 * @param param accessToken, refreshToken
+	 * @return 200
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse> logout(@RequestBody TokenRequest param) {
+		authService.logout(param);
+		return ResponseEntity.ok()
+			.body(ApiResponse.toSuccessForm(null));
 	}
 }

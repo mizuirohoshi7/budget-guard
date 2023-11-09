@@ -37,34 +37,27 @@
 == Response API JSON
 
 ```json
-//성공
+// 성공
 {
     "status" : "success",
     "message" : null,
     "data" : { data }
 }
 
-//일반 에러
+// 실패
 {
     "status" : "fail",
     "message" : "fail message",
     "data" : null
 }
-
-//예외 발생
-{
-    "status" : "error",
-    "message" : "error message",
-    "data" : null
-}
 ```
 
-== 예외 메시지 형식
+== 실패 메시지 형식
 
 ```json
 {
-  "status" : "error",
-  "message" : "[{오류값}] {오류필드}: {오류메시지}.",
+  "status" : "fail",
+  "message" : "[{오류값}] 필드에서 잘못된 값 [{오류필드}]를 받았습니다. ({오류메시지})",
   "data" : null
 }
 ```

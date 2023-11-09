@@ -9,7 +9,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.budgetguard.global.config.security.filter.JwtFilter;
 import com.budgetguard.global.config.security.handler.CustomAccessDeniedHandler;
 import com.budgetguard.global.config.security.handler.CustomAuthenticationEntryPoint;
 
@@ -22,6 +24,7 @@ public class SecurityConfig {
 
 	private final CustomAccessDeniedHandler accessDeniedHandler;
 	private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+	private final TokenManager tokenManager;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -44,6 +47,9 @@ public class SecurityConfig {
 
 			.exceptionHandling(e -> e.accessDeniedHandler(accessDeniedHandler)) // 권한 없이 접근
 			.exceptionHandling(e -> e.authenticationEntryPoint(authenticationEntryPoint)) // 유효하지 않은 자격으로 접근
+
+			// 요청의 헤더에 유효한 JWT 토큰이 있으면 SecurityContext 에 저장하는 필터
+			.addFilterBefore(new JwtFilter(tokenManager), UsernamePasswordAuthenticationFilter.class)
 
 			.build();
 	}

@@ -1,4 +1,4 @@
-== 회원
+== 사용자
 
 === 회원 가입
 
@@ -12,8 +12,56 @@ Response
 
 include::{snippets}/signup/회원_가입_성공/http-response.adoc[]
 
-- 400 BadRequest
+- 400 Bad Request
 
 include::{snippets}/signup/비밀번호와_비밀번호_확인이_일치하지_않으면_실패/http-response.adoc[]
 
 include::{snippets}/signup/이미_사용중인_계정명이면_실패/http-response.adoc[]
+
+=== 로그인
+
+Request
+
+include::{snippets}/login/로그인_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/login/로그인_성공/http-response.adoc[]
+
+- 400 Bad Request
+
+include::{snippets}/login/계정명과_비밀번호가_일치하지_않으면_실패/http-response.adoc[]
+
+=== 토큰 재발급
+
+Request
+
+include::{snippets}/reissue/토큰_재발급_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/reissue/토큰_재발급_성공/http-response.adoc[]
+
+- 400 Bad Request
+
+include::{snippets}/reissue/유효하지_않은_토큰이면_실패/http-response.adoc[]
+
+include::{snippets}/reissue/로그아웃한_사용자면_실패/http-response.adoc[]
+
+include::{snippets}/reissue/일치하지_않는_토큰이면_실패/http-response.adoc[]
+
+=== 로그아웃
+
+Request
+
+include::{snippets}/logout/로그아웃_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/logout/로그아웃_성공/http-response.adoc[]
