@@ -12,7 +12,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-	EXAMPLE_ERROR("예시 에러", HttpStatus.BAD_REQUEST);
+	ACCESS_DENIED("접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+	UNAUTHORIZED_ENTRY_POINT("유효하지 않은 자격 증명입니다.", HttpStatus.UNAUTHORIZED);
 
 	private final String message;
 	private final HttpStatus httpStatus;
