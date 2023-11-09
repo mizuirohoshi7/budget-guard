@@ -53,8 +53,8 @@ class AuthControllerTest extends AbstractRestDocsTest {
 		}
 
 		@Test
-		@DisplayName("비밀번호와 비밀번호 확인이 일치하지않으면 실패")
-		void 비밀번호와_비밀번호_확인이_일치하지않으면_실패() throws Exception {
+		@DisplayName("비밀번호와 비밀번호 확인이 일치하지 않으면 실패")
+		void 비밀번호와_비밀번호_확인이_일치하지_않으면_실패() throws Exception {
 			String wrongPasswordConfirm = "wrong";
 			MemberSignupRequestParam param = MemberSignupRequestParam.builder()
 				.account(member.getAccount())

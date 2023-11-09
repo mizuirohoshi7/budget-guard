@@ -1,0 +1,72 @@
+= BudgetGuard API 명세
+:doctype: book
+:icons: front
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:seclinks:
+:docinfo: shared-head
+
+[[overview]]
+= 개요
+
+[[overview-http-verbs]]
+== HTTP 동사
+
+본 REST API에서 사용하는 HTTP 동사(verbs)는 가능한한 표준 HTTP와 REST 규약을 따릅니다.
+
+|===
+| 동사 | 용례
+
+| `GET`
+| 리소스를 가져올 때 사용
+
+| `POST`
+| 새 리소스를 만들 때 사용
+
+| `PUT`
+| 기존 리소스를 수정할 때 사용
+
+| `PATCH`
+| 기존 리소스의 일부를 수정할 때 사용
+
+| `DELETE`
+| 기존 리소스를 삭제할 떄 사용
+|===
+
+== Response API JSON
+
+```json
+//성공
+{
+    "status" : "success",
+    "message" : null,
+    "data" : { data }
+}
+
+//일반 에러
+{
+    "status" : "fail",
+    "message" : "fail message",
+    "data" : null
+}
+
+//예외 발생
+{
+    "status" : "error",
+    "message" : "error message",
+    "data" : null
+}
+```
+
+== 예외 메시지 형식
+
+```json
+{
+  "status" : "error",
+  "message" : "[{오류값}] {오류필드}: {오류메시지}.",
+  "data" : null
+}
+```
+
+include::member.adoc[]

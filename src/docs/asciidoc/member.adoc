@@ -1,0 +1,19 @@
+== 회원
+
+=== 회원 가입
+
+Request
+
+include::{snippets}/signup/회원_가입_성공/http-request.adoc[]
+
+Response
+
+- 201 Created
+
+include::{snippets}/signup/회원_가입_성공/http-response.adoc[]
+
+- 400 BadRequest
+
+include::{snippets}/signup/비밀번호와_비밀번호_확인이_일치하지_않으면_실패/http-response.adoc[]
+
+include::{snippets}/signup/이미_사용중인_계정명이면_실패/http-response.adoc[]
