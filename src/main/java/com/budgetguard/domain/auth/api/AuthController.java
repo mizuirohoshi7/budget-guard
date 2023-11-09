@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.budgetguard.domain.auth.application.AuthService;
+import com.budgetguard.domain.auth.dto.request.TokenRequest;
 import com.budgetguard.domain.auth.dto.response.TokenResponse;
 import com.budgetguard.domain.member.dto.request.MemberLoginRequestParam;
 import com.budgetguard.domain.member.dto.request.MemberSignupRequestParam;
@@ -48,6 +49,19 @@ public class AuthController {
 	@PostMapping("/login")
 	public ResponseEntity<ApiResponse> login(@RequestBody MemberLoginRequestParam param) {
 		TokenResponse tokenResponse = authService.login(param);
+		return ResponseEntity.ok()
+			.body(ApiResponse.toSuccessForm(tokenResponse));
+	}
+
+	/**
+	 * 토큰 재발급
+	 *
+	 * @param param accessToken, refreshToken
+	 * @return 200, 재발급된 accessToken, refreshToken을 담은 tokenResponse
+	 */
+	@PostMapping("/reissue")
+	public ResponseEntity<ApiResponse> reissue(@RequestBody TokenRequest param) {
+		TokenResponse tokenResponse = authService.reissue(param);
 		return ResponseEntity.ok()
 			.body(ApiResponse.toSuccessForm(tokenResponse));
 	}

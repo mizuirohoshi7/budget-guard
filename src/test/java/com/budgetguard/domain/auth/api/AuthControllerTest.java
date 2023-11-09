@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.budgetguard.config.restdocs.AbstractRestDocsTest;
 import com.budgetguard.domain.auth.application.AuthService;
+import com.budgetguard.domain.auth.dto.request.TokenRequest;
 import com.budgetguard.domain.auth.dto.response.TokenResponse;
 import com.budgetguard.domain.member.MemberTestHelper;
 import com.budgetguard.domain.member.dto.request.MemberLoginRequestParam;
@@ -121,6 +122,74 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			mockMvc.perform(post(URL + "/login")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
+				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("토큰 재발급")
+	class reissue {
+		@Test
+		@DisplayName("토큰 재발급 성공")
+		void 토큰_재발급_성공() throws Exception {
+			TokenRequest tokenRequest = TokenRequest.builder()
+				.accessToken("accessToken")
+				.refreshToken("refreshToken")
+				.build();
+			TokenResponse tokenResponse = TokenResponse.builder()
+				.accessToken("new accessToken")
+				.refreshToken("new refreshToken")
+				.build();
+
+			given(authService.reissue(any())).willReturn(tokenResponse);
+
+			mockMvc.perform(post(URL + "/reissue")
+					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
+				.andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("유효하지 않은 토큰이면 실패")
+		void 유효하지_않은_토큰이면_실패() throws Exception {
+			TokenRequest tokenRequest = TokenRequest.builder()
+				.accessToken("accessToken")
+				.refreshToken("refreshToken")
+				.build();
+
+			given(authService.reissue(any())).willThrow(new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", INVALID_REFRESH_TOKEN));
+
+			mockMvc.perform(post(URL + "/reissue")
+					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("로그아웃한 사용자면 실패")
+		void 로그아웃한_사용자면_실패() throws Exception {
+			TokenRequest tokenRequest = TokenRequest.builder()
+				.accessToken("accessToken")
+				.refreshToken("refreshToken")
+				.build();
+
+			given(authService.reissue(any())).willThrow(new BusinessException("logout account", "account", MEMBER_LOGOUT));
+
+			mockMvc.perform(post(URL + "/reissue")
+					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("일치하지 않는 토큰이면 실패")
+		void 일치하지_않는_토큰이면_실패() throws Exception {
+			TokenRequest tokenRequest = TokenRequest.builder()
+				.accessToken("accessToken")
+				.refreshToken("refreshToken")
+				.build();
+
+			given(authService.reissue(any())).willThrow(new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", REFRESH_TOKEN_MISMATCH));
+
+			mockMvc.perform(post(URL + "/reissue")
+					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
 				.andExpect(status().isBadRequest());
 		}
 	}

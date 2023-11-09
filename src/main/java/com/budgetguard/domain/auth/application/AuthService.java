@@ -1,5 +1,7 @@
 package com.budgetguard.domain.auth.application;
 
+import static com.budgetguard.global.error.ErrorCode.*;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.budgetguard.domain.auth.dao.RefreshTokenRepository;
+import com.budgetguard.domain.auth.dto.request.TokenRequest;
 import com.budgetguard.domain.auth.dto.response.TokenResponse;
 import com.budgetguard.domain.auth.entity.RefreshToken;
 import com.budgetguard.domain.member.dao.MemberRepository;
@@ -80,6 +83,45 @@ public class AuthService {
 			.value(tokenResponse.getRefreshToken())
 			.build();
 		refreshTokenRepository.save(refreshToken);
+
+		return tokenResponse;
+	}
+
+	/**
+	 * 토큰 재발급
+	 *
+	 * @param tokenRequest accessToken, refreshToken
+	 * @return 재발급된 accessToken, refreshToken을 담은 tokenResponse
+	 */
+	public TokenResponse reissue(TokenRequest tokenRequest) {
+		// Refresh Token 검증
+		if (tokenManager.validateToken(tokenRequest.getRefreshToken())) {
+			throw new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", INVALID_REFRESH_TOKEN);
+		}
+
+		// Access Token에서 사용자 정보 추출
+		Authentication authentication = tokenManager.createAuthentication(tokenRequest.getAccessToken());
+
+		// 계정명으로 저장된 Refresh Token을 조회
+		RefreshToken refreshToken = refreshTokenRepository.findByKey(authentication.getName()).orElseThrow(
+			() -> new BusinessException(authentication.getName(), "account", MEMBER_LOGOUT)
+		);
+
+		// 요청으로 받은 Refresh Token과 저장된 Refresh Token 일치 여부 확인
+		if (!refreshToken.getValue().equals(tokenRequest.getRefreshToken())) {
+			throw new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", REFRESH_TOKEN_MISMATCH);
+		}
+
+		// 토큰 재발급
+		TokenResponse tokenResponse = tokenManager.createTokenResponse(authentication);
+
+		// 기존 Refresh Token 삭제 후 갱신된 Refresh Token 저장
+		refreshTokenRepository.delete(refreshToken);
+		RefreshToken newRefreshToken = RefreshToken.builder()
+			.key(authentication.getName())
+			.value(tokenResponse.getRefreshToken())
+			.build();
+		refreshTokenRepository.save(newRefreshToken);
 
 		return tokenResponse;
 	}

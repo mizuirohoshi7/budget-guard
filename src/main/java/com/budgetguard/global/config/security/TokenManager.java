@@ -90,11 +90,11 @@ public class TokenManager {
 	/**
 	 * 토큰을 복호화해서 사용자 정보를 추출한다.
 	 *
-	 * @param token JWT 토큰
+	 * @param accessToken JWT 토큰
 	 * @return 사용자 정보
 	 */
-	public Authentication createAuthentication(String token) {
-		Claims claims = toClaims(token);
+	public Authentication createAuthentication(String accessToken) {
+		Claims claims = toClaims(accessToken);
 
 		// 클레임에서 권한 정보 추출
 		List<SimpleGrantedAuthority> authorities = Arrays.stream(
@@ -105,7 +105,7 @@ public class TokenManager {
 		// 권한 정보를 기반으로 UserDetails 객체를 생성한다.
 		User principal = new User(claims.getSubject(), "", authorities);
 
-		// 사용자 정보를 기반으로 사용자 정보를 생성한다.
+		// UserDetails 객체를 기반으로 사용자 정보를 생성한다.
 		return new UsernamePasswordAuthenticationToken(principal, "", authorities);
 	}
 
