@@ -16,9 +16,14 @@ public enum ErrorCode {
 	INVALID_PASSWORD_CONFIRM("비밀번호와 비밀번호 확인이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
 	DUPLICATED_ACCOUNT("이미 사용중인 계정명입니다.", HttpStatus.BAD_REQUEST),
 
+	// 로그인
+	WRONG_PASSWORD("비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
+
 	// 인가 인증
 	ACCESS_DENIED("접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
-	UNAUTHORIZED_ENTRY_POINT("유효하지 않은 자격 증명입니다.", HttpStatus.UNAUTHORIZED);
+	UNAUTHORIZED_ENTRY_POINT("유효하지 않은 자격 증명입니다.", HttpStatus.UNAUTHORIZED),
+	MEMBER_ACCOUNT_NOT_FOUND("존재하지 않는 계정입니다.", HttpStatus.BAD_REQUEST)
+	;
 
 	private final String message;
 	private final HttpStatus httpStatus;

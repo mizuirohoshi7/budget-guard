@@ -1,5 +1,6 @@
 package com.budgetguard.domain.auth.api;
 
+import static com.budgetguard.global.error.ErrorCode.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -14,7 +15,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.budgetguard.config.restdocs.AbstractRestDocsTest;
 import com.budgetguard.domain.auth.application.AuthService;
+import com.budgetguard.domain.auth.dto.response.TokenResponse;
 import com.budgetguard.domain.member.MemberTestHelper;
+import com.budgetguard.domain.member.dto.request.MemberLoginRequestParam;
 import com.budgetguard.domain.member.dto.request.MemberSignupRequestParam;
 import com.budgetguard.domain.member.entity.Member;
 import com.budgetguard.global.error.BusinessException;
@@ -79,6 +82,44 @@ class AuthControllerTest extends AbstractRestDocsTest {
 			given(authService.signup(any())).willThrow(new BusinessException(member.getAccount(), "account", ErrorCode.DUPLICATED_ACCOUNT));
 
 			mockMvc.perform(post(URL + "/signup")
+					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
+				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("로그인")
+	class login {
+		@Test
+		@DisplayName("로그인 성공")
+		void 로그인_성공() throws Exception {
+			MemberLoginRequestParam param = MemberLoginRequestParam.builder()
+				.account(member.getAccount())
+				.password(member.getPassword())
+				.build();
+			TokenResponse tokenResponse = TokenResponse.builder()
+				.accessToken("accessToken")
+				.refreshToken("refreshToken")
+				.build();
+
+			given(authService.login(any())).willReturn(tokenResponse);
+
+			mockMvc.perform(post(URL + "/login")
+					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
+				.andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("계정명과 비밀번호가 일치하지 않으면 실패")
+		void 계정명과_비밀번호가_일치하지_않으면_실패() throws Exception {
+			MemberLoginRequestParam param = MemberLoginRequestParam.builder()
+				.account(member.getAccount())
+				.password(member.getPassword())
+				.build();
+
+			given(authService.login(any())).willThrow(new BusinessException(param.getPassword(), "password", WRONG_PASSWORD));
+
+			mockMvc.perform(post(URL + "/login")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
 				.andExpect(status().isBadRequest());
 		}

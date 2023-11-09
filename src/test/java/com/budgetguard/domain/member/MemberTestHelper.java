@@ -1,5 +1,7 @@
 package com.budgetguard.domain.member;
 
+import static com.budgetguard.domain.member.entity.MemberRole.*;
+
 import com.budgetguard.domain.member.entity.Member;
 
 /**
@@ -12,6 +14,7 @@ public class MemberTestHelper {
 			.id(1L)
 			.account("testAccount")
 			.password("Password123!")
+			.role(ROLE_USER)
 			.build();
 	}
 }
