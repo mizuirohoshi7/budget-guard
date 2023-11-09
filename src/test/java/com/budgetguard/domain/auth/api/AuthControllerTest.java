@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebMvcTest(AuthController.class)
 class AuthControllerTest extends AbstractRestDocsTest {
 
-	static final String URL = "/api/v1/auth";
+	static final String AUTH_URL = "/api/v1/auth";
 	static final Member member = MemberTestHelper.createMember();
 
 	@Autowired
@@ -51,7 +51,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.signup(any())).willReturn(1L);
 
-			mockMvc.perform(post(URL + "/signup")
+			mockMvc.perform(post(AUTH_URL + "/signup")
 				.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
 				.andExpect(status().isCreated());
 		}
@@ -66,7 +66,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 				.passwordConfirm(wrongPasswordConfirm)
 				.build();
 
-			mockMvc.perform(post(URL + "/signup")
+			mockMvc.perform(post(AUTH_URL + "/signup")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
 				.andExpect(status().isBadRequest());
 		}
@@ -82,7 +82,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.signup(any())).willThrow(new BusinessException(member.getAccount(), "account", ErrorCode.DUPLICATED_ACCOUNT));
 
-			mockMvc.perform(post(URL + "/signup")
+			mockMvc.perform(post(AUTH_URL + "/signup")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
 				.andExpect(status().isBadRequest());
 		}
@@ -105,7 +105,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.login(any())).willReturn(tokenResponse);
 
-			mockMvc.perform(post(URL + "/login")
+			mockMvc.perform(post(AUTH_URL + "/login")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
 				.andExpect(status().isOk());
 		}
@@ -120,7 +120,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.login(any())).willThrow(new BusinessException(param.getPassword(), "password", WRONG_PASSWORD));
 
-			mockMvc.perform(post(URL + "/login")
+			mockMvc.perform(post(AUTH_URL + "/login")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
 				.andExpect(status().isBadRequest());
 		}
@@ -143,7 +143,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.reissue(any())).willReturn(tokenResponse);
 
-			mockMvc.perform(post(URL + "/reissue")
+			mockMvc.perform(post(AUTH_URL + "/reissue")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
 				.andExpect(status().isOk());
 		}
@@ -158,7 +158,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.reissue(any())).willThrow(new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", INVALID_REFRESH_TOKEN));
 
-			mockMvc.perform(post(URL + "/reissue")
+			mockMvc.perform(post(AUTH_URL + "/reissue")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
 				.andExpect(status().isBadRequest());
 		}
@@ -173,7 +173,7 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.reissue(any())).willThrow(new BusinessException("logout account", "account", MEMBER_LOGOUT));
 
-			mockMvc.perform(post(URL + "/reissue")
+			mockMvc.perform(post(AUTH_URL + "/reissue")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
 				.andExpect(status().isBadRequest());
 		}
@@ -188,9 +188,26 @@ class AuthControllerTest extends AbstractRestDocsTest {
 
 			given(authService.reissue(any())).willThrow(new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", REFRESH_TOKEN_MISMATCH));
 
-			mockMvc.perform(post(URL + "/reissue")
+			mockMvc.perform(post(AUTH_URL + "/reissue")
 					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
 				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("로그아웃")
+	class logout {
+		@Test
+		@DisplayName("로그아웃 성공")
+		void 로그아웃_성공() throws Exception {
+			TokenRequest tokenRequest = TokenRequest.builder()
+				.accessToken("accessToken")
+				.refreshToken("refreshToken")
+				.build();
+
+			mockMvc.perform(post(AUTH_URL + "/logout")
+					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(tokenRequest)))
+				.andExpect(status().isOk());
 		}
 	}
 }

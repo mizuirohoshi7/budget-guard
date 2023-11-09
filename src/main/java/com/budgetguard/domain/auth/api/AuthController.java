@@ -65,4 +65,17 @@ public class AuthController {
 		return ResponseEntity.ok()
 			.body(ApiResponse.toSuccessForm(tokenResponse));
 	}
+
+	/**
+	 * 로그아웃
+	 *
+	 * @param param accessToken, refreshToken
+	 * @return 200
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<ApiResponse> logout(@RequestBody TokenRequest param) {
+		authService.logout(param);
+		return ResponseEntity.ok()
+			.body(ApiResponse.toSuccessForm(null));
+	}
 }

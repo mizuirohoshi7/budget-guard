@@ -125,4 +125,26 @@ public class AuthService {
 
 		return tokenResponse;
 	}
+
+	/**
+	 * 로그아웃
+	 *
+	 * @param tokenRequest accessToken, refreshToken
+	 */
+	public void logout(TokenRequest tokenRequest) {
+		// Refresh Token 검증
+		if (!tokenManager.validateToken(tokenRequest.getRefreshToken())) {
+			throw new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", INVALID_REFRESH_TOKEN);
+		}
+
+		// Access Token에서 사용자 정보 추출
+		Authentication authentication = tokenManager.createAuthentication(tokenRequest.getAccessToken());
+
+		// 계정명으로 저장된 Refresh Token을 조회
+		RefreshToken refreshToken = refreshTokenRepository.findByKey(authentication.getName()).orElseThrow(
+			() -> new BusinessException(authentication.getName(), "account", MEMBER_LOGOUT)
+		);
+
+		refreshTokenRepository.delete(refreshToken);
+	}
 }
