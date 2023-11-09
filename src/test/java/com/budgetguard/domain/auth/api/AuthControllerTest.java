@@ -5,17 +5,14 @@ import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
+import com.budgetguard.config.restdocs.AbstractRestDocsTest;
 import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.member.MemberTestHelper;
 import com.budgetguard.domain.member.dto.request.MemberSignupRequestParam;
@@ -25,24 +22,16 @@ import com.budgetguard.global.error.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(AuthController.class)
-class AuthControllerTest {
+class AuthControllerTest extends AbstractRestDocsTest {
 
 	static final String URL = "/api/v1/auth";
 	static final Member member = MemberTestHelper.createMember();
-
-	@Autowired
-	MockMvc mockMvc;
 
 	@Autowired
 	ObjectMapper mapper;
 
 	@MockBean
 	AuthService authService;
-
-	@BeforeEach
-	void setUp(WebApplicationContext context) {
-		mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-	}
 
 	@Nested
 	@DisplayName("회원 가입")
