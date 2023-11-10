@@ -62,7 +62,8 @@ public class BudgetService {
 		Budget savedBudget = budgetRepository.save(budget);
 
 		// 예산을 사용자의 월간 총 예산에 추가한다.
-		changeTotalBudgetAmount(member, member.getMonthlyOverview().getTotalBudgetAmount() + param.getAmount());
+		int amount = member.getMonthlyOverview().getTotalBudgetAmount() + param.getAmount();
+		changeTotalBudgetAmount(member, amount);
 
 		return savedBudget.getId();
 	}
@@ -90,7 +91,8 @@ public class BudgetService {
 		Member member = memberRepository.findById(param.getMemberId()).orElseThrow(
 			() -> new BusinessException(param.getMemberId(), "memberId", MEMBER_NOT_FOUND)
 		);
-		changeTotalBudgetAmount(member, afterAmount - beforeAmount);
+		int amount = member.getMonthlyOverview().getTotalBudgetAmount() + (afterAmount - beforeAmount);
+		changeTotalBudgetAmount(member, amount);
 
 		return budgetId;
 	}

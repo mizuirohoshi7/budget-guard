@@ -24,7 +24,7 @@ Response
 
 include::{snippets}/create-budget/예산_설정_성공/http-response.adoc[]
 
-- 400 Bad Request
+- 404 Not Found
 
 include::{snippets}/create-budget/존재하지_않는_사용자로_요청하면_실패/http-response.adoc[]
 

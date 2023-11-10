@@ -64,3 +64,4 @@
 
 include::member.adoc[]
 include::budget.adoc[]
+include::expenditure.adoc[]
