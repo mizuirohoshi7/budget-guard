@@ -63,3 +63,4 @@
 ```
 
 include::member.adoc[]
+include::budget.adoc[]
