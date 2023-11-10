@@ -1,4 +1,4 @@
-package com.budgetguard.domain.expenditure.dto;
+package com.budgetguard.domain.expenditure.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

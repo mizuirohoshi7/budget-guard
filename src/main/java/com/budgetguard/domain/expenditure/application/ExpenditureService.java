@@ -9,8 +9,9 @@ import com.budgetguard.domain.budget.constant.CategoryName;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
 import com.budgetguard.domain.budget.entity.budgetcategory.BudgetCategory;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
-import com.budgetguard.domain.expenditure.dto.ExpenditureCreateRequestParam;
-import com.budgetguard.domain.expenditure.dto.ExpenditureUpdateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 import com.budgetguard.domain.member.entity.Member;
@@ -90,6 +91,20 @@ public class ExpenditureService {
 		changeTotalExpenditureAmount(member, amount);
 
 		return expenditure.getId();
+	}
+
+	/**
+	 * 지출을 상세 조회한다.
+	 *
+	 * @param expenditureId 조회할 지출의 ID
+	 * @return 지출 상세 조회 응답
+	 */
+	public ExpenditureDetailResponse getExpenditure(Long expenditureId) {
+		Expenditure expenditure = expenditureRepository.findById(expenditureId).orElseThrow(
+			() -> new BusinessException(expenditureId, "expenditureId", ErrorCode.EXPENDITURE_NOT_FOUND)
+		);
+
+		return new ExpenditureDetailResponse(expenditure);
 	}
 
 	/**

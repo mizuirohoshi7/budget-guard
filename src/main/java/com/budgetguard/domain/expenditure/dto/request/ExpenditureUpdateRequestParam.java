@@ -1,4 +1,4 @@
-package com.budgetguard.domain.expenditure.dto;
+package com.budgetguard.domain.expenditure.dto.request;
 
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 

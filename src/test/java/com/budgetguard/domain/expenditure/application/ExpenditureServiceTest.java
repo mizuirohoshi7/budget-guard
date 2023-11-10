@@ -17,8 +17,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
-import com.budgetguard.domain.expenditure.dto.ExpenditureCreateRequestParam;
-import com.budgetguard.domain.expenditure.dto.ExpenditureUpdateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 
@@ -80,6 +81,7 @@ class ExpenditureServiceTest {
 				.isExcluded(true)
 				.build();
 			given(expenditureRepository.findById(anyLong())).willReturn(Optional.of(expenditure));
+			given(memberRepository.findById(anyLong())).willReturn(Optional.of(expenditure.getMember()));
 
 			Long updatedExpenditureId = expenditureService.updateExpenditure(expenditure.getId(), param);
 
@@ -87,6 +89,20 @@ class ExpenditureServiceTest {
 			assertThat(expenditure.getAmount()).isEqualTo(3000);
 			assertThat(expenditure.getMemo()).isEqualTo("updated memo");
 			assertThat(expenditure.getIsExcluded()).isTrue();
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 상세 조회")
+	class getExpenditure {
+		@Test
+		@DisplayName("지출 상세 조회 성공")
+		void 지출_상세_조회_성공() {
+			given(expenditureRepository.findById(anyLong())).willReturn(Optional.of(expenditure));
+
+			ExpenditureDetailResponse expenditureDetail = expenditureService.getExpenditure(expenditure.getId());
+
+			assertThat(expenditureDetail).isNotNull();
 		}
 	}
 }

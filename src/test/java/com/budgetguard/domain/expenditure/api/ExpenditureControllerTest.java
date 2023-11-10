@@ -18,9 +18,12 @@ import com.budgetguard.config.restdocs.AbstractRestDocsTest;
 import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.application.ExpenditureService;
-import com.budgetguard.domain.expenditure.dto.ExpenditureCreateRequestParam;
-import com.budgetguard.domain.expenditure.dto.ExpenditureUpdateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
+import com.budgetguard.global.error.BusinessException;
+import com.budgetguard.global.error.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(ExpenditureController.class)
@@ -127,6 +130,36 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 			mockMvc.perform(put(EXPENDITURE_URL + "/" + expenditure.getId())
 					.contentType(APPLICATION_JSON)
 					.content(mapper.writeValueAsString(param))
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 상세 조회")
+	class getExpenditure {
+		@Test
+		@DisplayName("지출 상세 조회 성공")
+		void 지출_상세_조회_성공() throws Exception {
+			ExpenditureDetailResponse expenditureDetail = new ExpenditureDetailResponse(expenditure);
+			given(expenditureService.getExpenditure(any())).willReturn(expenditureDetail);
+
+			mockMvc.perform(get(EXPENDITURE_URL + "/" + expenditure.getId())
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("존재하지 않는 지출을 조회하면 실패")
+		void 존재하지_않는_지출을_조회하면_실패() throws Exception {
+			int wrongExpenditureId = 100;
+			given(expenditureService.getExpenditure(any())).willThrow(new BusinessException(wrongExpenditureId, "expenditureId", ErrorCode.EXPENDITURE_NOT_FOUND));
+
+			mockMvc.perform(get(EXPENDITURE_URL + "/" + wrongExpenditureId)
+					.contentType(APPLICATION_JSON)
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 				)
 				.andExpect(status().isBadRequest());
