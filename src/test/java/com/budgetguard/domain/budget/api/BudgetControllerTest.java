@@ -87,7 +87,7 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 					.content(mapper.writeValueAsString(param))
 					.header(AUTHORIZATION, JWT_TOKEN)
 				)
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 		}
 
 		@Test
@@ -108,7 +108,7 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 					.content(mapper.writeValueAsString(param))
 					.header(AUTHORIZATION, JWT_TOKEN)
 				)
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
 		}
 	}
 

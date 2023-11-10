@@ -105,4 +105,18 @@ class ExpenditureServiceTest {
 			assertThat(expenditureDetail).isNotNull();
 		}
 	}
+
+	@Nested
+	@DisplayName("지출 삭제")
+	class deleteExpenditure {
+		@Test
+		@DisplayName("지출 삭제 성공")
+		void 지출_삭제_성공() {
+			given(expenditureRepository.findById(anyLong())).willReturn(Optional.of(expenditure));
+
+			Long deletedExpenditureId = expenditureService.deleteExpenditure(expenditure.getId());
+
+			assertThat(deletedExpenditureId).isNotNull();
+		}
+	}
 }

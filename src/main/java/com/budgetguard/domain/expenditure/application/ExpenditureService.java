@@ -83,7 +83,7 @@ public class ExpenditureService {
 		expenditure.update(param.toEntity());
 		int afterAmount = expenditure.getAmount();
 
-		// 사용자의 월간 오버뷰에 반영한다.
+		// 수정된 지출을 사용자의 월간 오버뷰에 반영한다.
 		Member member = memberRepository.findById(param.getMemberId()).orElseThrow(
 			() -> new BusinessException(param.getMemberId(), "memberId", MEMBER_NOT_FOUND)
 		);
@@ -105,6 +105,28 @@ public class ExpenditureService {
 		);
 
 		return new ExpenditureDetailResponse(expenditure);
+	}
+
+	/**
+	 * 지출을 삭제한다.
+	 *
+	 * @param expenditureId 삭제할 지출의 ID
+	 * @return 삭제된 지출의 ID
+	 */
+	public Long deleteExpenditure(Long expenditureId) {
+
+		Expenditure expenditure = expenditureRepository.findById(expenditureId).orElseThrow(
+			() -> new BusinessException(expenditureId, "expenditureId", ErrorCode.EXPENDITURE_NOT_FOUND)
+		);
+
+		// 삭제된 지출을 사용자의 월간 오버뷰에 반영한다.
+		Member member = expenditure.getMember();
+		int amount = member.getMonthlyOverview().getTotalExpenditureAmount() - expenditure.getAmount();
+		changeTotalExpenditureAmount(member, amount);
+
+		expenditureRepository.delete(expenditure);
+
+		return expenditureId;
 	}
 
 	/**

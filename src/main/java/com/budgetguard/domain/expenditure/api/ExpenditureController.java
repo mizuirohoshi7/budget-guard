@@ -4,6 +4,7 @@ import static org.springframework.http.HttpHeaders.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.expenditure.application.ExpenditureService;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
 import com.budgetguard.global.format.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -83,6 +85,25 @@ public class ExpenditureController {
 		// 토큰의 account와 지출을 조회할 account는 같아야 한다.
 		authService.validSameTokenAccount(token, expenditureService.getExpenditure(expenditureId).getMemberId());
 
-		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureService.getExpenditure(expenditureId)));
+		ExpenditureDetailResponse expenditureDetail = expenditureService.getExpenditure(expenditureId);
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureDetail));
+	}
+
+	/**
+	 * 지출을 삭제한다.
+	 *
+	 * @param token JWT 토큰
+	 * @param expenditureId 삭제할 지출의 ID
+	 * @return 삭제된 지출의 ID
+	 */
+	@DeleteMapping("/{expenditureId}")
+	public ResponseEntity<ApiResponse> deleteExpenditure(
+		@RequestHeader(AUTHORIZATION) String token,
+		@PathVariable Long expenditureId
+	) {
+		// 토큰의 account와 지출을 삭제할 account는 같아야 한다.
+		authService.validSameTokenAccount(token, expenditureService.getExpenditure(expenditureId).getMemberId());
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureService.deleteExpenditure(expenditureId)));
 	}
 }

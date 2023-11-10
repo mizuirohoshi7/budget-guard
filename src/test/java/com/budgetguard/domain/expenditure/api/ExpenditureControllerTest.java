@@ -162,7 +162,38 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 					.contentType(APPLICATION_JSON)
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 				)
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isNotFound());
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 삭제")
+	class deleteExpenditure {
+		@Test
+		@DisplayName("지출 삭제 성공")
+		void 지출_삭제_성공() throws Exception {
+			given(expenditureService.getExpenditure(any())).willReturn(new ExpenditureDetailResponse(expenditure));
+			given(expenditureService.deleteExpenditure(any())).willReturn(expenditure.getId());
+
+			mockMvc.perform(delete(EXPENDITURE_URL + "/" + expenditure.getId())
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("존재하지 않는 지출을 삭제하면 실패")
+		void 존재하지_않는_지출을_삭제하면_실패() throws Exception {
+			int wrongExpenditureId = 100;
+			given(expenditureService.getExpenditure(any())).willReturn(new ExpenditureDetailResponse(expenditure));
+			given(expenditureService.deleteExpenditure(any())).willThrow(new BusinessException(wrongExpenditureId, "expenditureId", ErrorCode.EXPENDITURE_NOT_FOUND));
+
+			mockMvc.perform(delete(EXPENDITURE_URL + "/" + wrongExpenditureId)
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isNotFound());
 		}
 	}
 }
