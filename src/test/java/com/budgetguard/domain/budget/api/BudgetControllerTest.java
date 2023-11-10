@@ -2,6 +2,7 @@ package com.budgetguard.domain.budget.api;
 
 import static com.budgetguard.global.error.ErrorCode.*;
 import static org.mockito.BDDMockito.*;
+import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.budgetguard.config.restdocs.AbstractRestDocsTest;
+import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.application.BudgetService;
 import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
@@ -26,12 +28,16 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 
 	static final String BUDGET_URL = "/api/v1/budgets";
 	static final Budget budget = BudgetTestHelper.createBudget();
+	static final String JWT_TOKEN = "JWT_TOKEN";
 
 	@Autowired
 	ObjectMapper mapper;
 
 	@MockBean
 	BudgetService budgetService;
+
+	@MockBean
+	AuthService authService;
 
 	@Nested
 	@DisplayName("예산 설정")
@@ -48,7 +54,10 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 			given(budgetService.createBudget(any())).willReturn(budget.getId());
 
 			mockMvc.perform(post(BUDGET_URL)
-				.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
+						.contentType(APPLICATION_JSON)
+						.content(mapper.writeValueAsString(param))
+						.header(AUTHORIZATION, JWT_TOKEN)
+				)
 				.andExpect(status().isOk());
 		}
 
@@ -67,7 +76,10 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 			);
 
 			mockMvc.perform(post(BUDGET_URL)
-					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
+					.contentType(APPLICATION_JSON)
+					.content(mapper.writeValueAsString(param))
+					.header(AUTHORIZATION, JWT_TOKEN)
+				)
 				.andExpect(status().isBadRequest());
 		}
 
@@ -85,7 +97,10 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 			);
 
 			mockMvc.perform(post(BUDGET_URL)
-					.contentType(APPLICATION_JSON).content(mapper.writeValueAsString(param)))
+					.contentType(APPLICATION_JSON)
+					.content(mapper.writeValueAsString(param))
+					.header(AUTHORIZATION, JWT_TOKEN)
+				)
 				.andExpect(status().isBadRequest());
 		}
 	}

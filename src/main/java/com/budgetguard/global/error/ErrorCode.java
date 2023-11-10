@@ -31,6 +31,7 @@ public enum ErrorCode {
 	UNAUTHORIZED_ENTRY_POINT("유효하지 않은 자격 증명입니다.", UNAUTHORIZED),
 	MEMBER_ACCOUNT_NOT_FOUND("존재하지 않는 계정입니다.", BAD_REQUEST),
 
+
 	// 사용자
 	MEMBER_NOT_FOUND("존재하지 않는 회원입니다.", BAD_REQUEST),
 

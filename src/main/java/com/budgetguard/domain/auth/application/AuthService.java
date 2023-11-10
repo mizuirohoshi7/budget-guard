@@ -147,4 +147,24 @@ public class AuthService {
 
 		refreshTokenRepository.delete(refreshToken);
 	}
+
+	/**
+	 * 토큰의 account와 요청 dto의 account가 같은지 검증
+	 *
+	 * @param token JWT 토큰
+	 * @param memberId 요청 dto의 사용자 ID
+	 */
+	public void validSameTokenAccount(String token, Long memberId) {
+		// 토큰으로 account 조회
+		String tokenAccount = tokenManager.getAccountFromToken(token);
+
+		// 요청 dto의 사용자 ID로 account 조회
+		String memberAccount = memberRepository.findById(memberId).orElseThrow(
+			() -> new BusinessException(memberId, "memberId", MEMBER_NOT_FOUND)
+		).getAccount();
+
+		if (!tokenAccount.equals(memberAccount)) {
+			throw new BusinessException(memberId, "memberId", ACCESS_DENIED);
+		}
+	}
 }
