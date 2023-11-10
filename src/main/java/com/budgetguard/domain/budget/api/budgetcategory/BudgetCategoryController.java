@@ -1,4 +1,4 @@
-package com.budgetguard.domain.budgetcategory.api;
+package com.budgetguard.domain.budget.api.budgetcategory;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.budgetguard.domain.budgetcategory.constant.CategoryName;
+import com.budgetguard.domain.budget.constant.CategoryName;
 import com.budgetguard.global.format.ApiResponse;
 
 @RestController

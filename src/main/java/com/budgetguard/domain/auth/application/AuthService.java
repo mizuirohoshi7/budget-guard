@@ -67,6 +67,7 @@ public class AuthService {
 	 * @return JWT 토큰
 	 */
 	public TokenResponse login(MemberLoginRequestParam param) {
+
 		// 1. 로그인 정보로 AuthenticationToken 생성
 		UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
 			param.getAccount(), param.getPassword());
@@ -94,6 +95,7 @@ public class AuthService {
 	 * @return 재발급된 accessToken, refreshToken을 담은 tokenResponse
 	 */
 	public TokenResponse reissue(TokenRequest tokenRequest) {
+
 		// Refresh Token 검증
 		if (tokenManager.validateToken(tokenRequest.getRefreshToken())) {
 			throw new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", INVALID_REFRESH_TOKEN);
@@ -132,6 +134,7 @@ public class AuthService {
 	 * @param tokenRequest accessToken, refreshToken
 	 */
 	public void logout(TokenRequest tokenRequest) {
+
 		// Refresh Token 검증
 		if (!tokenManager.validateToken(tokenRequest.getRefreshToken())) {
 			throw new BusinessException(tokenRequest.getRefreshToken(), "refreshToken", INVALID_REFRESH_TOKEN);
@@ -146,5 +149,26 @@ public class AuthService {
 		);
 
 		refreshTokenRepository.delete(refreshToken);
+	}
+
+	/**
+	 * 토큰의 account와 요청 dto의 account가 같은지 검증
+	 *
+	 * @param token JWT 토큰
+	 * @param memberId 요청 dto의 사용자 ID
+	 */
+	public void validSameTokenAccount(String token, Long memberId) {
+
+		// 토큰으로 account 조회
+		String tokenAccount = tokenManager.getAccountFromToken(token);
+
+		// 요청 dto의 사용자 ID로 account 조회
+		String memberAccount = memberRepository.findById(memberId).orElseThrow(
+			() -> new BusinessException(memberId, "memberId", MEMBER_NOT_FOUND)
+		).getAccount();
+
+		if (!tokenAccount.equals(memberAccount)) {
+			throw new BusinessException(memberId, "memberId", ACCESS_DENIED);
+		}
 	}
 }

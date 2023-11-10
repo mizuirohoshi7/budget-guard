@@ -52,6 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
 	 * @return 토큰 정보
 	 */
 	private String resolveToken(HttpServletRequest request) {
+
 		// 헤더에서 토큰 정보를 추출한다.
 		String token = request.getHeader(AUTHORIZATION_HEADER);
 

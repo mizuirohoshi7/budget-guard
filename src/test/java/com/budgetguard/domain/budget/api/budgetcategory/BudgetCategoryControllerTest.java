@@ -1,4 +1,4 @@
-package com.budgetguard.domain.budgetcategory.api;
+package com.budgetguard.domain.budget.api.budgetcategory;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import com.budgetguard.config.restdocs.AbstractRestDocsTest;
+import com.budgetguard.domain.budget.api.budgetcategory.BudgetCategoryController;
 
 @WebMvcTest(BudgetCategoryController.class)
 class BudgetCategoryControllerTest extends AbstractRestDocsTest {

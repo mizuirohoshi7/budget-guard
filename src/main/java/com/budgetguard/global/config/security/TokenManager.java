@@ -60,6 +60,7 @@ public class TokenManager {
 	 * @return JWT 토큰 Dto
 	 */
 	public TokenResponse createTokenResponse(Authentication authentication) {
+
 		// 권한 불러오기
 		String authorities = authentication.getAuthorities().stream()
 			.map(GrantedAuthority::getAuthority)
@@ -94,9 +95,11 @@ public class TokenManager {
 	 * @return 사용자 정보
 	 */
 	public Authentication createAuthentication(String accessToken) {
+
+		// 토큰을 복호화해서 클레임 정보를 추출한다.
 		Claims claims = toClaims(accessToken);
 
-		// 클레임에서 권한 정보 추출
+		// 클레임에서 권한 정보를 추출한다.
 		List<SimpleGrantedAuthority> authorities = Arrays.stream(
 				claims.get(AUTHORITIES_KEY).toString().split(AUTHORITIES_SEPARATOR))
 			.map(SimpleGrantedAuthority::new)
@@ -116,6 +119,7 @@ public class TokenManager {
 	 * @return 클레임 정보
 	 */
 	private Claims toClaims(String token) {
+
 		try {
 			return Jwts.parserBuilder()
 				.setSigningKey(key)
@@ -127,7 +131,14 @@ public class TokenManager {
 		}
 	}
 
+	/**
+	 * 토큰 유효성 검증
+	 *
+	 * @param token JWT 토큰
+	 * @return 유효하면 true, 그렇지 않으면 false
+	 */
 	public boolean validateToken(String token) {
+
 		try {
 			Jwts.parserBuilder()
 				.setSigningKey(key)
@@ -144,5 +155,25 @@ public class TokenManager {
 			log.debug("JWT 토큰이 잘못되었습니다.");
 		}
 		return false;
+	}
+
+	/**
+	 * 토큰에서 사용자 계정 추출
+	 *
+	 * @param token JWT 토큰
+	 * @return 사용자 계정
+	 */
+	public String getAccountFromToken(String token) {
+
+		if (token.startsWith("Bearer ")) {
+			token = token.substring(7);
+		}
+
+		return String.valueOf(Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token)
+			.getBody()
+			.getSubject());
 	}
 }

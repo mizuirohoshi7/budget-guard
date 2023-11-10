@@ -1,6 +1,6 @@
-package com.budgetguard.domain.budgetcategory.entity;
+package com.budgetguard.domain.budget.entity.budgetcategory;
 
-import com.budgetguard.domain.budgetcategory.constant.CategoryName;
+import com.budgetguard.domain.budget.constant.CategoryName;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +25,7 @@ public class BudgetCategory {
 	private Long id;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	private CategoryName name;
 
 	@Builder
