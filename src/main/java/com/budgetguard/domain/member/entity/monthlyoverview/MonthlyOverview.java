@@ -28,12 +28,12 @@ public class MonthlyOverview {
 	private Integer totalExpenditureAmount = 0; // 지출 총액
 
 	// 예산을 추가하거나 삭제할 때마다 예산 총액을 변경해주는 메서드
-	public void updateTotalBudgetAmount(int changedAmount) {
-		this.totalBudgetAmount += changedAmount;
+	public void updateTotalBudgetAmount(int totalBudgetAmount) {
+		this.totalBudgetAmount = totalBudgetAmount;
 	}
 
 	// 지출을 추가하거나 삭제할 때마다 지출 총액을 변경해주는 메서드
-	public void updateTotalExpenditureAmount(int changedAmount) {
-		this.totalExpenditureAmount += changedAmount;
+	public void updateTotalExpenditureAmount(int totalExpenditureAmount) {
+		this.totalExpenditureAmount = totalExpenditureAmount;
 	}
 }

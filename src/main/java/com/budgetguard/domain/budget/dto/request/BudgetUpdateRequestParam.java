@@ -1,4 +1,4 @@
-package com.budgetguard.domain.budget.dto;
+package com.budgetguard.domain.budget.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 예산 수정 요청 dto
+ */
 @Getter
 @NoArgsConstructor
 public class BudgetUpdateRequestParam {

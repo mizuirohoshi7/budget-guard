@@ -7,6 +7,9 @@ import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,8 +21,11 @@ import com.budgetguard.config.restdocs.AbstractRestDocsTest;
 import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.application.BudgetService;
-import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
-import com.budgetguard.domain.budget.dto.BudgetUpdateRequestParam;
+import com.budgetguard.domain.budget.constant.CategoryName;
+import com.budgetguard.domain.budget.dto.request.BudgetCreateRequestParam;
+import com.budgetguard.domain.budget.dto.request.BudgetRecommendRequestParam;
+import com.budgetguard.domain.budget.dto.request.BudgetUpdateRequestParam;
+import com.budgetguard.domain.budget.dto.response.BudgetRecommendResponse;
 import com.budgetguard.domain.budget.entity.Budget;
 import com.budgetguard.global.error.BusinessException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -145,6 +151,34 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 					.header(AUTHORIZATION, JWT_TOKEN)
 				)
 				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("예산 추천")
+	class recommendBudget {
+		@Test
+		@DisplayName("예산 추천 성공")
+		void 예산_추천_성공() throws Exception {
+			BudgetRecommendRequestParam param = BudgetRecommendRequestParam.builder()
+				.memberId(budget.getMember().getId())
+				.totalBudgetAmount(30000)
+				.build();
+
+			Map<CategoryName, Integer> budgetRecommendAmountPerCategory = new HashMap<>();
+			for (CategoryName categoryName : CategoryName.values()) {
+				budgetRecommendAmountPerCategory.put(categoryName, 10000);
+			}
+			BudgetRecommendResponse budgetRecommendation = new BudgetRecommendResponse(budgetRecommendAmountPerCategory);
+
+			given(budgetService.createBudgetRecommendation(any())).willReturn(budgetRecommendation);
+
+			mockMvc.perform(get(BUDGET_URL + "/recommendation")
+						.contentType(APPLICATION_JSON)
+						.content(mapper.writeValueAsString(param))
+						.header(AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
 		}
 	}
 }

@@ -45,3 +45,15 @@ include::{snippets}/update-budget/예산_수정_성공/http-response.adoc[]
 - 400 Bad Request
 
 include::{snippets}/update-budget/예산을_음수로_수정하면_실패/http-response.adoc[]
+
+=== 예산 추천
+
+Request
+
+include::{snippets}/recommend-budget/예산_추천_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/recommend-budget/예산_추천_성공/http-response.adoc[]

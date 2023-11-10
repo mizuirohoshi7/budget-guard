@@ -60,6 +60,7 @@ public class TokenManager {
 	 * @return JWT 토큰 Dto
 	 */
 	public TokenResponse createTokenResponse(Authentication authentication) {
+
 		// 권한 불러오기
 		String authorities = authentication.getAuthorities().stream()
 			.map(GrantedAuthority::getAuthority)
@@ -94,6 +95,7 @@ public class TokenManager {
 	 * @return 사용자 정보
 	 */
 	public Authentication createAuthentication(String accessToken) {
+
 		// 토큰을 복호화해서 클레임 정보를 추출한다.
 		Claims claims = toClaims(accessToken);
 
@@ -117,6 +119,7 @@ public class TokenManager {
 	 * @return 클레임 정보
 	 */
 	private Claims toClaims(String token) {
+
 		try {
 			return Jwts.parserBuilder()
 				.setSigningKey(key)
@@ -135,6 +138,7 @@ public class TokenManager {
 	 * @return 유효하면 true, 그렇지 않으면 false
 	 */
 	public boolean validateToken(String token) {
+
 		try {
 			Jwts.parserBuilder()
 				.setSigningKey(key)
@@ -160,6 +164,7 @@ public class TokenManager {
 	 * @return 사용자 계정
 	 */
 	public String getAccountFromToken(String token) {
+
 		if (token.startsWith("Bearer ")) {
 			token = token.substring(7);
 		}

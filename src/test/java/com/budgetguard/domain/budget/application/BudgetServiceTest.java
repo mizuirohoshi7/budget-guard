@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -17,8 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.dao.BudgetRepository;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
-import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
-import com.budgetguard.domain.budget.dto.BudgetUpdateRequestParam;
+import com.budgetguard.domain.budget.dto.request.BudgetCreateRequestParam;
+import com.budgetguard.domain.budget.dto.request.BudgetRecommendRequestParam;
+import com.budgetguard.domain.budget.dto.request.BudgetUpdateRequestParam;
+import com.budgetguard.domain.budget.dto.response.BudgetRecommendResponse;
 import com.budgetguard.domain.budget.entity.Budget;
 import com.budgetguard.domain.member.dao.MemberRepository;
 import com.budgetguard.global.error.BusinessException;
@@ -101,17 +104,40 @@ class BudgetServiceTest {
 		@DisplayName("예산 수정 성공")
 		void 예산_수정_성공() {
 			int updatedAmount = 9000;
+			Budget newBudget = BudgetTestHelper.createBudget(); // 수정 시 다른 테스트에 영향을 끼치지 않도록 새로운 Budget 객체 생성
 			BudgetUpdateRequestParam param = BudgetUpdateRequestParam.builder()
-				.memberId(budget.getMember().getId())
+				.memberId(newBudget.getMember().getId())
 				.amount(updatedAmount)
 				.build();
 
-			given(budgetRepository.findById(any())).willReturn(Optional.of(budget));
+			given(budgetRepository.findById(any())).willReturn(Optional.of(newBudget));
+			given(memberRepository.findById(any())).willReturn(Optional.of(newBudget.getMember()));
+
+			budgetService.updateBudget(newBudget.getId(), param);
+
+			assertThat(newBudget.getAmount()).isEqualTo(updatedAmount);
+		}
+	}
+
+	@Nested
+	@DisplayName("예산 추천")
+	class recommendBudget {
+		@Test
+		@DisplayName("예산 추천 성공")
+		void 예산_추천_성공() {
+			BudgetRecommendRequestParam param = BudgetRecommendRequestParam.builder()
+				.memberId(budget.getMember().getId())
+				.totalBudgetAmount(30000)
+				.build();
+
 			given(memberRepository.findById(any())).willReturn(Optional.of(budget.getMember()));
+			given(budgetCategoryRepository.findByName(any())).willReturn(Optional.of(budget.getCategory()));
+			given(memberRepository.findAll()).willReturn(List.of(budget.getMember()));
+			given(budgetRepository.findByMemberIdAndCategoryId(any(), any())).willReturn(Optional.of(budget));
 
-			budgetService.updateBudget(budget.getId(), param);
+			BudgetRecommendResponse budgetRecommendation = budgetService.createBudgetRecommendation(param);
 
-			assertThat(budget.getAmount()).isEqualTo(updatedAmount);
+			assertThat(budgetRecommendation).isNotNull();
 		}
 	}
 }
