@@ -5,6 +5,7 @@ import static com.budgetguard.global.error.ErrorCode.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.budgetguard.domain.budget.constant.CategoryName;
 import com.budgetguard.domain.budget.dao.BudgetRepository;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
 import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
@@ -40,7 +41,8 @@ public class BudgetService {
 		);
 
 		// 요청 dto로부터 예산 카테고리를 조회한다.
-		BudgetCategory category = budgetCategoryRepository.findByName(param.getCategoryName()).orElseThrow(
+		CategoryName categoryName = CategoryName.valueOf(param.getCategoryName());
+		BudgetCategory category = budgetCategoryRepository.findByName(categoryName).orElseThrow(
 			() -> new BusinessException(param.getCategoryName(), "categoryName", BUDGET_CATEGORY_NOT_FOUND)
 		);
 
