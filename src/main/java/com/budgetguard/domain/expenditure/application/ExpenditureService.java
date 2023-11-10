@@ -47,6 +47,7 @@ public class ExpenditureService {
 			() -> new BusinessException(param.getCategoryName(), "categoryName", BUDGET_CATEGORY_NOT_FOUND)
 		);
 
+		// 지출을 저장한다.
 		Expenditure expenditure = Expenditure.builder()
 			.member(member)
 			.budgetCategory(budgetCategory)
@@ -55,6 +56,10 @@ public class ExpenditureService {
 			.isExcluded(param.getIsExcluded())
 			.build();
 		Expenditure savedExpenditure = expenditureRepository.save(expenditure);
+
+		// 사용자의 월간 오버뷰에 반영한다.
+		int amount = member.getMonthlyOverview().getTotalExpenditureAmount() + param.getAmount();
+		changeTotalExpenditureAmount(member, amount);
 
 		return savedExpenditure.getId();
 	}
@@ -68,14 +73,32 @@ public class ExpenditureService {
 	 */
 	public Long updateExpenditure(Long expenditureId, ExpenditureUpdateRequestParam param) {
 
-		// 지출 수정 요청 파라미터의 memberId로 회원을 찾는다.
 		Expenditure expenditure = expenditureRepository.findById(expenditureId).orElseThrow(
 			() -> new BusinessException(expenditureId, "expenditureId", ErrorCode.EXPENDITURE_NOT_FOUND)
 		);
 
 		// 지출을 수정한다.
+		int beforeAmount = expenditure.getAmount();
 		expenditure.update(param.toEntity());
+		int afterAmount = expenditure.getAmount();
+
+		// 사용자의 월간 오버뷰에 반영한다.
+		Member member = memberRepository.findById(param.getMemberId()).orElseThrow(
+			() -> new BusinessException(param.getMemberId(), "memberId", MEMBER_NOT_FOUND)
+		);
+		int amount = member.getMonthlyOverview().getTotalExpenditureAmount() + (afterAmount - beforeAmount);
+		changeTotalExpenditureAmount(member, amount);
 
 		return expenditure.getId();
+	}
+
+	/**
+	 * 지출 변경을 사용자의 월간 오버뷰에 반영합니다.
+	 *
+	 * @param member 사용자
+	 * @param amount 지출 변경량
+	 */
+	private void changeTotalExpenditureAmount(Member member, int amount) {
+		member.getMonthlyOverview().updateTotalExpenditureAmount(amount);
 	}
 }
