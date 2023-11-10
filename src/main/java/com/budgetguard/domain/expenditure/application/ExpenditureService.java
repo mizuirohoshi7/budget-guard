@@ -2,6 +2,10 @@ package com.budgetguard.domain.expenditure.application;
 
 import static com.budgetguard.global.error.ErrorCode.*;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,8 +14,11 @@ import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository
 import com.budgetguard.domain.budget.entity.budgetcategory.BudgetCategory;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 import com.budgetguard.domain.member.entity.Member;
@@ -130,6 +137,35 @@ public class ExpenditureService {
 	}
 
 	/**
+	 * 검색 조건으로 지출을 조회한다.
+	 *
+	 * @param searchCond 검색 조건
+	 * @return 검색된 지출 목록
+	 */
+	public ExpenditureSearchResponse searchExpenditures(ExpenditureSearchCond searchCond) {
+
+		// 검색 조건에 맞는 Expenditure 엔티티 리스트를 가져온다.
+		List<Expenditure> expenditures = expenditureRepository.searchExpenditures(searchCond);
+
+		// 지출 목록을 응답 dto로 변환한다.
+		List<ExpenditureSimpleResponse> expenditureSimpleResponses = expenditures.stream()
+			.map(ExpenditureSimpleResponse::new)
+			.collect(Collectors.toList());
+
+		// 지출 총 합계를 계산한다.
+		Integer totalAmount = calculateTotalAmount(expenditures);
+
+		// 카테고리별 지출 합계를 계산한다.
+		Map<CategoryName, Integer> amountPerCategory = calculateAmountPerCategory(expenditures);
+
+		return ExpenditureSearchResponse.builder()
+			.expenditures(expenditureSimpleResponses)
+			.totalAmount(totalAmount)
+			.amountPerCategory(amountPerCategory)
+			.build();
+	}
+
+	/**
 	 * 지출 변경을 사용자의 월간 오버뷰에 반영합니다.
 	 *
 	 * @param member 사용자
@@ -137,5 +173,31 @@ public class ExpenditureService {
 	 */
 	private void changeTotalExpenditureAmount(Member member, int amount) {
 		member.getMonthlyOverview().updateTotalExpenditureAmount(amount);
+	}
+
+	/**
+	 * 지출 총 합계를 계산한다.
+	 *
+	 * @param expenditures 지출 목록
+	 * @return 지출 총 합계
+	 */
+	private Integer calculateTotalAmount(List<Expenditure> expenditures) {
+		return expenditures.stream()
+			.mapToInt(Expenditure::getAmount)
+			.sum();
+	}
+
+	/**
+	 * 카테고리별 지출 합계를 계산한다.
+	 *
+	 * @param expenditures 지출 목록
+	 * @return 카테고리별 지출 합계
+	 */
+	private Map<CategoryName, Integer> calculateAmountPerCategory(List<Expenditure> expenditures) {
+		return expenditures.stream()
+			.collect(Collectors.groupingBy(
+				expenditure -> expenditure.getBudgetCategory().getName(),
+				Collectors.summingInt(Expenditure::getAmount)
+			));
 	}
 }

@@ -3,6 +3,8 @@ package com.budgetguard.domain.expenditure.application;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,12 +16,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.budgetguard.domain.budget.constant.CategoryName;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 
@@ -117,6 +122,28 @@ class ExpenditureServiceTest {
 			Long deletedExpenditureId = expenditureService.deleteExpenditure(expenditure.getId());
 
 			assertThat(deletedExpenditureId).isNotNull();
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 검색 목록 조회")
+	class getExpenditures {
+		@Test
+		@DisplayName("지출 검색 목록 조회 성공")
+		void 지출_검색_목록_조회_성공() {
+			ExpenditureSearchCond searchCond = ExpenditureSearchCond.builder()
+				.memberId(expenditure.getMember().getId())
+				.startDate(LocalDate.of(2021, 1, 1))
+				.endDate(LocalDate.of(2021, 1, 31))
+				.categoryName(CategoryName.FOOD.name())
+				.minAmount(1000)
+				.maxAmount(5000)
+				.build();
+			given(expenditureRepository.searchExpenditures(any())).willReturn(List.of(expenditure));
+
+			ExpenditureSearchResponse searchResponse = expenditureService.searchExpenditures(searchCond);
+
+			assertThat(searchResponse).isNotNull();
 		}
 	}
 }

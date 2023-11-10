@@ -63,3 +63,15 @@ include::{snippets}/delete-expenditure/지출_삭제_성공/http-response.adoc[]
 - 404 Not Found
 
 include::{snippets}/delete-expenditure/존재하지_않는_지출을_삭제하면_실패/http-response.adoc[]
+
+== 지출 목록 검색
+
+Request
+
+include::{snippets}/search-expenditures/지출_목록_검색_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/search-expenditures/지출_목록_검색_성공/http-response.adoc[]

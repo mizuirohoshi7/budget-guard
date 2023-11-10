@@ -2,6 +2,9 @@ package com.budgetguard.domain.expenditure.api;
 
 import static org.springframework.http.HttpHeaders.*;
 
+import java.time.LocalDate;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,13 +15,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.expenditure.application.ExpenditureService;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.global.format.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -105,5 +111,55 @@ public class ExpenditureController {
 		authService.validSameTokenAccount(token, expenditureService.getExpenditure(expenditureId).getMemberId());
 
 		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureService.deleteExpenditure(expenditureId)));
+	}
+
+	/**
+	 * 검색 조건으로 지출 목록을 조회한다.
+	 *
+	 * @param token JWT 토큰
+	 * @param param 검색 조건
+	 * @return 검색된 지출 목록
+	 */
+	@GetMapping
+	public ResponseEntity<ApiResponse> searchExpenditures(
+		@RequestHeader(AUTHORIZATION) String token,
+		@RequestParam Map<String, String> param
+	) {
+		// 토큰의 account와 지출을 검색할 account는 같아야 한다.
+		authService.validSameTokenAccount(token, Long.valueOf(param.get("memberId")));
+
+		// 요청 파라미터를 검색 조건으로 변환한다.
+		ExpenditureSearchCond searchCond = toSearchCond(param);
+
+		// 지출 목록을 검색하여 반환한다.
+		ExpenditureSearchResponse searchResponse = expenditureService.searchExpenditures(searchCond);
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(searchResponse));
+	}
+
+	/**
+	 * 요청 파라미터를 검색 조건으로 변환한다.
+	 * String을 알맞은 타입으로 변환하는 작업도 수행한다.
+	 *
+	 * @param param 요청 파라미터
+	 * @return 검색 조건
+	 */
+	private ExpenditureSearchCond toSearchCond(Map<String, String> param) {
+		return ExpenditureSearchCond.builder()
+			.startDate(toLocalDate(param.get("startDate")))
+			.endDate(toLocalDate(param.get("endDate")))
+			.categoryName(param.get("categoryName"))
+			.minAmount(Integer.valueOf(param.get("minAmount")))
+			.maxAmount(Integer.valueOf(param.get("maxAmount")))
+			.build();
+	}
+
+	/**
+	 * String을 LocalDate로 변환한다.
+	 *
+	 * @param date 변환할 날짜 문자열
+	 * @return 변환된 날짜
+	 */
+	private LocalDate toLocalDate(String date) {
+		return LocalDate.parse(date);
 	}
 }

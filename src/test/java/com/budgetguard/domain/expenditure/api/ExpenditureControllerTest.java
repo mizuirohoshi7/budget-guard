@@ -5,6 +5,9 @@ import static org.springframework.http.MediaType.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,14 +16,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import com.budgetguard.config.restdocs.AbstractRestDocsTest;
 import com.budgetguard.domain.auth.application.AuthService;
+import com.budgetguard.domain.budget.constant.CategoryName;
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.application.ExpenditureService;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.global.error.BusinessException;
 import com.budgetguard.global.error.ErrorCode;
@@ -194,6 +202,42 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 				)
 				.andExpect(status().isNotFound());
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 목록 검색")
+	class searchExpenditures {
+		@Test
+		@DisplayName("지출 목록 검색 성공")
+		void 지출_목록_검색_성공() throws Exception {
+			MultiValueMap<String, String> param = new LinkedMultiValueMap<>();
+			param.add("memberId", "1");
+			param.add("startDate", "2020-01-01");
+			param.add("endDate", "2020-01-31");
+			param.add("categoryName", "FOOD");
+			param.add("minAmount", "1000");
+			param.add("maxAmount", "10000");
+
+			Map<CategoryName, Integer> amountPerCategory = Map.of(
+				CategoryName.FOOD, 5000,
+				CategoryName.TRANSPORTATION, 3000,
+				CategoryName.ENTERTAINMENT, 2000
+			);
+			ExpenditureSearchResponse searchResponse = ExpenditureSearchResponse.builder()
+				.expenditures(List.of(new ExpenditureSimpleResponse(expenditure)))
+				.totalAmount(10000)
+				.amountPerCategory(amountPerCategory)
+				.build();
+
+			given(expenditureService.searchExpenditures(any())).willReturn(searchResponse);
+
+			mockMvc.perform(get(EXPENDITURE_URL)
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+					.params(param)
+				)
+				.andExpect(status().isOk());
 		}
 	}
 }
