@@ -18,6 +18,7 @@ import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.dao.BudgetRepository;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
 import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
+import com.budgetguard.domain.budget.dto.BudgetUpdateRequestParam;
 import com.budgetguard.domain.budget.entity.Budget;
 import com.budgetguard.domain.member.dao.MemberRepository;
 import com.budgetguard.global.error.BusinessException;
@@ -88,9 +89,29 @@ class BudgetServiceTest {
 				.build();
 
 			given(memberRepository.findById(any())).willReturn(Optional.of(budget.getMember()));
-			given(budgetCategoryRepository.findByName(any())).willReturn(Optional.empty());
 
 			assertThrows(BusinessException.class, () -> budgetService.createBudget(param));
+		}
+	}
+
+	@Nested
+	@DisplayName("예산 수정")
+	class updateBudget {
+		@Test
+		@DisplayName("예산 수정 성공")
+		void 예산_수정_성공() {
+			int updatedAmount = 9000;
+			BudgetUpdateRequestParam param = BudgetUpdateRequestParam.builder()
+				.memberId(budget.getMember().getId())
+				.amount(updatedAmount)
+				.build();
+
+			given(budgetRepository.findById(any())).willReturn(Optional.of(budget));
+			given(memberRepository.findById(any())).willReturn(Optional.of(budget.getMember()));
+
+			budgetService.updateBudget(budget.getId(), param);
+
+			assertThat(budget.getAmount()).isEqualTo(updatedAmount);
 		}
 	}
 }

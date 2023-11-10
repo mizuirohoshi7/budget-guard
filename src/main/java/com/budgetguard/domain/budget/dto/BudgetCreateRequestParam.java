@@ -2,6 +2,7 @@ package com.budgetguard.domain.budget.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class BudgetCreateRequestParam {
 	private String categoryName;
 
 	@NotNull(message = "예산을 입력해주세요")
+	@PositiveOrZero(message = "예산은 0 이상이어야 합니다")
 	private Integer amount;
 
 	@Builder

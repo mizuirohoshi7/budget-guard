@@ -2,10 +2,11 @@ package com.budgetguard.domain.budget.api;
 
 import static org.springframework.http.HttpHeaders.*;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.budget.application.BudgetService;
 import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
+import com.budgetguard.domain.budget.dto.BudgetUpdateRequestParam;
 import com.budgetguard.global.format.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -42,5 +44,24 @@ public class BudgetController {
 
 		Long budgetId = budgetService.createBudget(param);
 		return ResponseEntity.ok(ApiResponse.toSuccessForm(budgetId));
+	}
+
+	/**
+	 * 예산을 수정합니다.
+	 *
+	 * @param token JWT 토큰
+	 * @param param 예산 수정 요청 dto
+	 * @return 수정된 예산 ID
+	 */
+	@PutMapping("/{budgetId}")
+	public ResponseEntity<ApiResponse> updateBudget(
+		@RequestHeader(AUTHORIZATION) String token,
+		@PathVariable Long budgetId,
+		@RequestBody @Validated BudgetUpdateRequestParam param
+	) {
+		// 토큰의 account와 예산을 수정할 account는 같아야 한다.
+		authService.validSameTokenAccount(token, param.getMemberId());
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(budgetService.updateBudget(budgetId, param)));
 	}
 }

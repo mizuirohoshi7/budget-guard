@@ -44,4 +44,8 @@ public class Budget {
 		this.category = category;
 		this.amount = amount;
 	}
+
+	public void updateAmount(int amount) {
+		this.amount = amount;
+	}
 }

@@ -19,6 +19,7 @@ import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.application.BudgetService;
 import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
+import com.budgetguard.domain.budget.dto.BudgetUpdateRequestParam;
 import com.budgetguard.domain.budget.entity.Budget;
 import com.budgetguard.global.error.BusinessException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -97,6 +98,48 @@ class BudgetControllerTest extends AbstractRestDocsTest {
 			);
 
 			mockMvc.perform(post(BUDGET_URL)
+					.contentType(APPLICATION_JSON)
+					.content(mapper.writeValueAsString(param))
+					.header(AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("예산 수정")
+	class updateBudget {
+		@Test
+		@DisplayName("예산 수정 성공")
+		void 예산_수정_성공() throws Exception {
+			int updatedAmount = 9000;
+			BudgetUpdateRequestParam param = BudgetUpdateRequestParam.builder()
+				.memberId(budget.getMember().getId())
+				.amount(updatedAmount)
+				.build();
+
+			given(budgetService.updateBudget(any(), any())).willReturn(budget.getId());
+
+			mockMvc.perform(put(BUDGET_URL + "/" + budget.getId())
+						.contentType(APPLICATION_JSON)
+						.content(mapper.writeValueAsString(param))
+						.header(AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("예산을 음수로 수정하면 실패")
+		void 예산을_음수로_수정하면_실패() throws Exception {
+			int updatedAmount = -9000;
+			BudgetUpdateRequestParam param = BudgetUpdateRequestParam.builder()
+				.memberId(budget.getMember().getId())
+				.amount(updatedAmount)
+				.build();
+
+			given(budgetService.updateBudget(any(), any())).willReturn(budget.getId());
+
+			mockMvc.perform(put(BUDGET_URL + "/" + budget.getId())
 					.contentType(APPLICATION_JSON)
 					.content(mapper.writeValueAsString(param))
 					.header(AUTHORIZATION, JWT_TOKEN)
