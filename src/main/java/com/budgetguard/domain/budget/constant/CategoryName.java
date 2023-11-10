@@ -1,4 +1,4 @@
-package com.budgetguard.domain.budgetcategory.constant;
+package com.budgetguard.domain.budget.constant;
 
 /**
  * 예산 카테고리의 종류

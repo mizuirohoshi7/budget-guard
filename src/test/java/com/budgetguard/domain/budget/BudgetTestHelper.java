@@ -1,7 +1,6 @@
 package com.budgetguard.domain.budget;
 
 import com.budgetguard.domain.budget.entity.Budget;
-import com.budgetguard.domain.budgetcategory.BudgetCategoryTestHelper;
 import com.budgetguard.domain.member.MemberTestHelper;
 
 /**

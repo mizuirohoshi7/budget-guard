@@ -1,8 +1,8 @@
-package com.budgetguard.domain.budgetcategory;
+package com.budgetguard.domain.budget;
 
-import static com.budgetguard.domain.budgetcategory.constant.CategoryName.*;
+import static com.budgetguard.domain.budget.constant.CategoryName.*;
 
-import com.budgetguard.domain.budgetcategory.entity.BudgetCategory;
+import com.budgetguard.domain.budget.entity.budgetcategory.BudgetCategory;
 
 /**
  * 테스트용 BudgetCategory 객체를 생성해주는 클래스

@@ -16,9 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.dao.BudgetRepository;
+import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
 import com.budgetguard.domain.budget.dto.BudgetCreateRequestParam;
 import com.budgetguard.domain.budget.entity.Budget;
-import com.budgetguard.domain.budgetcategory.dao.BudgetCategoryRepository;
 import com.budgetguard.domain.member.dao.MemberRepository;
 import com.budgetguard.global.error.BusinessException;
 
@@ -58,6 +58,9 @@ class BudgetServiceTest {
 			Long budgetId = budgetService.createBudget(param);
 
 			assertThat(budgetId).isEqualTo(budget.getId());
+			assertThat(budget.getMember().getMonthlyOverview().getTotalBudgetAmount()).isEqualTo(
+				budget.getAmount()
+			);
 		}
 
 		@Test

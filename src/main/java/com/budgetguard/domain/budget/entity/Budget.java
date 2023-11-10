@@ -1,6 +1,6 @@
 package com.budgetguard.domain.budget.entity;
 
-import com.budgetguard.domain.budgetcategory.entity.BudgetCategory;
+import com.budgetguard.domain.budget.entity.budgetcategory.BudgetCategory;
 import com.budgetguard.domain.member.entity.Member;
 
 import jakarta.persistence.Column;

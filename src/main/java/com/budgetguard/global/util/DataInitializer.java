@@ -4,9 +4,9 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import com.budgetguard.domain.budgetcategory.constant.CategoryName;
-import com.budgetguard.domain.budgetcategory.dao.BudgetCategoryRepository;
-import com.budgetguard.domain.budgetcategory.entity.BudgetCategory;
+import com.budgetguard.domain.budget.constant.CategoryName;
+import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
+import com.budgetguard.domain.budget.entity.budgetcategory.BudgetCategory;
 
 import lombok.RequiredArgsConstructor;
 
