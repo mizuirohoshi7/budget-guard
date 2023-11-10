@@ -68,4 +68,21 @@ public class Expenditure {
 		this.memo = memo;
 		this.isExcluded = isExcluded;
 	}
+
+	/**
+	 * null 값이 아닌 속성을 수정한다.
+	 *
+	 * @param expenditure 수정할 지출 내용
+	 */
+	public void update(Expenditure expenditure) {
+		if (expenditure.getAmount() != null) {
+			this.amount = expenditure.getAmount();
+		}
+		if (expenditure.getMemo() != null) {
+			this.memo = expenditure.getMemo();
+		}
+		if (expenditure.getIsExcluded() != null) {
+			this.isExcluded = expenditure.getIsExcluded();
+		}
+	}
 }

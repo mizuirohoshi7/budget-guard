@@ -15,3 +15,19 @@ include::{snippets}/create-expenditure/지출_생성_성공/http-response.adoc[]
 - 400 Bad Request
 
 include::{snippets}/create-expenditure/지출을_음수로_생성하면_실패/http-response.adoc[]
+
+=== 지출 수정
+
+Request
+
+include::{snippets}/update-expenditure/지출_수정_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/update-expenditure/지출_수정_성공/http-response.adoc[]
+
+- 400 Bad Request
+
+include::{snippets}/update-expenditure/지출을_음수로_수정하면_실패/http-response.adoc[]

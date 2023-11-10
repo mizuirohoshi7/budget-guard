@@ -4,7 +4,9 @@ import static org.springframework.http.HttpHeaders.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.expenditure.application.ExpenditureService;
 import com.budgetguard.domain.expenditure.dto.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.ExpenditureUpdateRequestParam;
 import com.budgetguard.global.format.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -42,5 +45,25 @@ public class ExpenditureController {
 
 		Long expenditureId = expenditureService.createExpenditure(param);
 		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureId));
+	}
+
+	/**
+	 * 지출을 수정한다.
+	 *
+	 * @param token JWT 토큰
+	 * @param expenditureId 수정할 지출의 ID
+	 * @param param 지출 수정 요청 파라미터
+	 * @return 수정된 지출의 ID
+	 */
+	@PutMapping("/{expenditureId}")
+	public ResponseEntity<ApiResponse> updateExpenditure(
+		@RequestHeader(AUTHORIZATION) String token,
+		@PathVariable Long expenditureId,
+		@RequestBody @Validated ExpenditureUpdateRequestParam param
+	) {
+		// 토큰의 account와 지출을 수정할 account는 같아야 한다.
+		authService.validSameTokenAccount(token, param.getMemberId());
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureService.updateExpenditure(expenditureId, param)));
 	}
 }

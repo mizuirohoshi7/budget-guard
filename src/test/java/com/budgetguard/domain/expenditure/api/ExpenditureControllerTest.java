@@ -19,6 +19,7 @@ import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.application.ExpenditureService;
 import com.budgetguard.domain.expenditure.dto.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -81,6 +82,49 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 				.build();
 
 			mockMvc.perform(post(EXPENDITURE_URL)
+					.contentType(APPLICATION_JSON)
+					.content(mapper.writeValueAsString(param))
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isBadRequest());
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 수정")
+	class updateExpenditure {
+		@Test
+		@DisplayName("지출 수정 성공")
+		void 지출_수정_성공() throws Exception {
+			ExpenditureUpdateRequestParam param = ExpenditureUpdateRequestParam.builder()
+				.memberId(expenditure.getMember().getId())
+				.amount(expenditure.getAmount())
+				.memo(expenditure.getMemo())
+				.isExcluded(expenditure.getIsExcluded())
+				.build();
+
+			given(expenditureService.updateExpenditure(any(), any())).willReturn(expenditure.getId());
+
+			mockMvc.perform(put(EXPENDITURE_URL + "/" + expenditure.getId())
+					.contentType(APPLICATION_JSON)
+					.content(mapper.writeValueAsString(param))
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("지출을 음수로 수정하면 실패")
+		void 지출을_음수로_수정하면_실패() throws Exception {
+			Integer wrongAmount = -1000;
+			ExpenditureUpdateRequestParam param = ExpenditureUpdateRequestParam.builder()
+				.memberId(expenditure.getMember().getId())
+				.amount(wrongAmount)
+				.memo(expenditure.getMemo())
+				.isExcluded(expenditure.getIsExcluded())
+				.build();
+
+			mockMvc.perform(put(EXPENDITURE_URL + "/" + expenditure.getId())
 					.contentType(APPLICATION_JSON)
 					.content(mapper.writeValueAsString(param))
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)

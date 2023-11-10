@@ -10,10 +10,12 @@ import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository
 import com.budgetguard.domain.budget.entity.budgetcategory.BudgetCategory;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
 import com.budgetguard.domain.expenditure.dto.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 import com.budgetguard.domain.member.entity.Member;
 import com.budgetguard.global.error.BusinessException;
+import com.budgetguard.global.error.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -55,5 +57,25 @@ public class ExpenditureService {
 		Expenditure savedExpenditure = expenditureRepository.save(expenditure);
 
 		return savedExpenditure.getId();
+	}
+
+	/**
+	 * 지출을 수정한다.
+	 *
+	 * @param expenditureId 수정할 지출의 ID
+	 * @param param 지출 수정 요청 파라미터
+	 * @return 수정된 지출의 ID
+	 */
+	public Long updateExpenditure(Long expenditureId, ExpenditureUpdateRequestParam param) {
+
+		// 지출 수정 요청 파라미터의 memberId로 회원을 찾는다.
+		Expenditure expenditure = expenditureRepository.findById(expenditureId).orElseThrow(
+			() -> new BusinessException(expenditureId, "expenditureId", ErrorCode.EXPENDITURE_NOT_FOUND)
+		);
+
+		// 지출을 수정한다.
+		expenditure.update(param.toEntity());
+
+		return expenditure.getId();
 	}
 }

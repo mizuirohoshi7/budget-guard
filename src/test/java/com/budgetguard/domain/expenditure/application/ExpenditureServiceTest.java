@@ -18,6 +18,7 @@ import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
 import com.budgetguard.domain.expenditure.dto.ExpenditureCreateRequestParam;
+import com.budgetguard.domain.expenditure.dto.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 
@@ -56,7 +57,6 @@ class ExpenditureServiceTest {
 				.memo(expenditure.getMemo())
 				.isExcluded(expenditure.getIsExcluded())
 				.build();
-
 			given(memberRepository.findById(anyLong())).willReturn(Optional.of(expenditure.getMember()));
 			given(budgetCategoryRepository.findByName(any())).willReturn(Optional.of(expenditure.getBudgetCategory()));
 			given(expenditureRepository.save(any())).willReturn(expenditure);
@@ -64,6 +64,29 @@ class ExpenditureServiceTest {
 			Long savedExpenditureId = expenditureService.createExpenditure(param);
 
 			assertThat(savedExpenditureId).isNotNull();
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 수정")
+	class updateExpenditure {
+		@Test
+		@DisplayName("지출 수정 성공")
+		void 지출_수정_성공() {
+			ExpenditureUpdateRequestParam param = ExpenditureUpdateRequestParam.builder()
+				.memberId(expenditure.getMember().getId())
+				.amount(3000)
+				.memo("updated memo")
+				.isExcluded(true)
+				.build();
+			given(expenditureRepository.findById(anyLong())).willReturn(Optional.of(expenditure));
+
+			Long updatedExpenditureId = expenditureService.updateExpenditure(expenditure.getId(), param);
+
+			assertThat(updatedExpenditureId).isNotNull();
+			assertThat(expenditure.getAmount()).isEqualTo(3000);
+			assertThat(expenditure.getMemo()).isEqualTo("updated memo");
+			assertThat(expenditure.getIsExcluded()).isTrue();
 		}
 	}
 }
