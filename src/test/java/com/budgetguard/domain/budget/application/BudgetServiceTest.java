@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.*;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ import com.budgetguard.global.error.BusinessException;
 @ExtendWith(MockitoExtension.class)
 class BudgetServiceTest {
 
-	static final Budget budget = BudgetTestHelper.createBudget();
+	static Budget budget;
 
 	@InjectMocks
 	BudgetService budgetService;
@@ -42,6 +43,11 @@ class BudgetServiceTest {
 
 	@Mock
 	BudgetCategoryRepository budgetCategoryRepository;
+
+	@BeforeEach
+	void setUp() {
+		budget = BudgetTestHelper.createBudget();
+	}
 
 	@Nested
 	@DisplayName("예산 설정")
@@ -104,18 +110,17 @@ class BudgetServiceTest {
 		@DisplayName("예산 수정 성공")
 		void 예산_수정_성공() {
 			int updatedAmount = 9000;
-			Budget newBudget = BudgetTestHelper.createBudget(); // 수정 시 다른 테스트에 영향을 끼치지 않도록 새로운 Budget 객체 생성
 			BudgetUpdateRequestParam param = BudgetUpdateRequestParam.builder()
-				.memberId(newBudget.getMember().getId())
+				.memberId(budget.getMember().getId())
 				.amount(updatedAmount)
 				.build();
 
-			given(budgetRepository.findById(any())).willReturn(Optional.of(newBudget));
-			given(memberRepository.findById(any())).willReturn(Optional.of(newBudget.getMember()));
+			given(budgetRepository.findById(any())).willReturn(Optional.of(budget));
+			given(memberRepository.findById(any())).willReturn(Optional.of(budget.getMember()));
 
-			budgetService.updateBudget(newBudget.getId(), param);
+			budgetService.updateBudget(budget.getId(), param);
 
-			assertThat(newBudget.getAmount()).isEqualTo(updatedAmount);
+			assertThat(budget.getAmount()).isEqualTo(updatedAmount);
 		}
 	}
 
