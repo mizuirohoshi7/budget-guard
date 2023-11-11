@@ -1,7 +1,9 @@
 package com.budgetguard.domain.expenditure.application;
 
+import static com.budgetguard.domain.expenditure.constant.ExpenditureMessage.*;
 import static com.budgetguard.global.error.ErrorCode.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,13 +12,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.budgetguard.domain.budget.constant.CategoryName;
+import com.budgetguard.domain.budget.dao.BudgetRepository;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
+import com.budgetguard.domain.budget.entity.Budget;
 import com.budgetguard.domain.budget.entity.budgetcategory.BudgetCategory;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
@@ -32,9 +37,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ExpenditureService {
 
+	// 예산을 초과했더라도 추천받는 최소 금액
+	private static final int MINIMUM_EXPENDITURE_AMOUNT = 5000;
+
 	private final ExpenditureRepository expenditureRepository;
 	private final MemberRepository memberRepository;
 	private final BudgetCategoryRepository budgetCategoryRepository;
+	private final BudgetRepository budgetRepository;
 
 	/**
 	 * 지출을 생성한다.
@@ -166,6 +175,47 @@ public class ExpenditureService {
 	}
 
 	/**
+	 * 오늘 지출 추천을 반환한다.
+	 *
+	 * @param account 사용자 계정
+	 * @return 지출 추천
+	 */
+	public ExpenditureRecommendationResponse createExpenditureRecommendation(String account) {
+
+		// 요청한 사용자를 조회한다.
+		Member member = memberRepository.findByAccount(account).orElseThrow(
+			() -> new BusinessException(account, "account", MEMBER_NOT_FOUND)
+		);
+
+		// 사용자의 카테고리별 예산 비율을 계산한다.
+		Map<CategoryName, Double> categoryRates = calculateCategoryRates(member);
+
+		// 현재 남아있는 예산을 이번 달의 남은 일수로 나누어 오늘 지출 가능한 총액을 구한다.
+		Integer todayBudget = calculateTodayBudget(member);
+
+		// 오늘 지출 가능한 총액을 예산 비율만큼 나누어 지출 추천으로 만든다.
+		Map<CategoryName, Integer> amountPerCategory = categoryRates.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> (int) (todayBudget * entry.getValue()) / 100 * 100 // 100원 단위로 반올림
+			));
+
+		// 지출 추천 중 최소 금액보다 적은 지출은 최소 금액으로 설정한다.
+		amountPerCategory.entrySet().stream()
+			.filter(entry -> entry.getValue() < MINIMUM_EXPENDITURE_AMOUNT)
+			.forEach(entry -> entry.setValue(MINIMUM_EXPENDITURE_AMOUNT));
+
+		// 지출 추천 메시지를 생성한다.
+		String expenditureMessage = createExpenditureMessage(member);
+
+		return ExpenditureRecommendationResponse.builder()
+			.totalAmount(todayBudget)
+			.amountPerCategory(amountPerCategory)
+			.expenditureMessage(expenditureMessage)
+			.build();
+	}
+
+	/**
 	 * 지출 변경을 사용자의 월간 오버뷰에 반영합니다.
 	 *
 	 * @param member 사용자
@@ -199,5 +249,66 @@ public class ExpenditureService {
 				expenditure -> expenditure.getBudgetCategory().getName(),
 				Collectors.summingInt(Expenditure::getAmount)
 			));
+	}
+
+	/**
+	 * 사용자의 카테고리별 예산 비율을 계산한다.
+	 *
+	 * @param member 사용자
+	 * @return 카테고리별 예산 비율
+	 */
+	private Map<CategoryName, Double> calculateCategoryRates(Member member) {
+		int totalBudgetAmount = member.getMonthlyOverview().getTotalBudgetAmount();
+		List<Budget> budgets = budgetRepository.findAllByMemberId(member.getId());
+		return budgets.stream()
+			.collect(Collectors.toMap(
+				budget -> budget.getCategory().getName(),
+				budget -> (double) budget.getAmount() / totalBudgetAmount
+			));
+	}
+
+	/**
+	 * 남은 예산을 이번 달의 남은 일수로 나누어 오늘 사용 가능한 지출 총액을 계산한다.
+	 *
+	 * @param member 사용자
+	 * @return 오늘 사용 가능한 지출 총액
+	 */
+	private Integer calculateTodayBudget(Member member) {
+		int totalBudgetAmount = member.getMonthlyOverview().getTotalBudgetAmount();
+		int totalExpenditureAmount = member.getMonthlyOverview().getTotalExpenditureAmount();
+
+		int remainingBudget = totalBudgetAmount - totalExpenditureAmount; // 남아있는 예산 총액
+		int remainingDays = LocalDate.now().lengthOfMonth() - LocalDate.now().getDayOfMonth() + 1; // 이번 달의 남은 일수
+		return remainingBudget / remainingDays;
+	}
+
+	/**
+	 * 지출 추천 메시지를 생성한다.
+	 * ((예산 총액 - 지출 총액) / 예산 총액)) / (남은 일수 / 해당 달의 총 일수)를 기준으로 삼아서 메시지를 생성한다.
+	 *
+	 * @param member 사용자
+	 * @return 지출 추천 메시지
+	 */
+	private String createExpenditureMessage(Member member) {
+		int totalBudgetAmount = member.getMonthlyOverview().getTotalBudgetAmount();
+		int totalExpenditureAmount = member.getMonthlyOverview().getTotalExpenditureAmount();
+		int remainingBudget = totalBudgetAmount - totalExpenditureAmount; // 남아있는 예산 총액
+		int remainingDays = LocalDate.now().lengthOfMonth() - LocalDate.now().getDayOfMonth() + 1; // 이번 달의 남은 일수
+
+		double moneyRate = (double) remainingBudget / totalBudgetAmount; // 예산 총액 대비 남아있는 예산 비율
+		double dayRate = (double) remainingDays / LocalDate.now().lengthOfMonth(); // 이번 달의 남은 일수 대비 오늘의 비율
+		double score = moneyRate * dayRate; // 지출 추천 점수
+
+		// 지출 추천 점수가 어느정도인지에 따라 메시지를 생성한다.
+		if (score >= GREAT.getScore()) {
+			return GREAT.getMessage();
+		}
+		if (score >= GOOD.getScore()) {
+			return GOOD.getMessage();
+		}
+		if (score >= NOT_BAD.getScore()) {
+			return NOT_BAD.getMessage();
+		}
+		return OVER_SPENDING.getMessage();
 	}
 }

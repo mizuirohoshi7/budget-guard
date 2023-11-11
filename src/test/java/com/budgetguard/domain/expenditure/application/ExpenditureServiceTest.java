@@ -16,7 +16,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.constant.CategoryName;
+import com.budgetguard.domain.budget.dao.BudgetRepository;
 import com.budgetguard.domain.budget.dao.budgetcategory.BudgetCategoryRepository;
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.dao.ExpenditureRepository;
@@ -24,6 +26,7 @@ import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestPa
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
@@ -44,6 +47,9 @@ class ExpenditureServiceTest {
 
 	@Mock
 	BudgetCategoryRepository budgetCategoryRepository;
+
+	@Mock
+	BudgetRepository budgetRepository;
 
 	@BeforeEach
 	void setUp() {
@@ -144,6 +150,22 @@ class ExpenditureServiceTest {
 			ExpenditureSearchResponse searchResponse = expenditureService.searchExpenditures(searchCond);
 
 			assertThat(searchResponse).isNotNull();
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 추천")
+	class createExpenditureRecommendation {
+		@Test
+		@DisplayName("지출 추천 성공")
+		void 지출_추천_성공() {
+			given(memberRepository.findByAccount(any())).willReturn(Optional.of(expenditure.getMember()));
+			given(budgetRepository.findAllByMemberId(any())).willReturn(List.of(BudgetTestHelper.createBudget()));
+
+			ExpenditureRecommendationResponse expenditureRecommendation = expenditureService.createExpenditureRecommendation(
+				expenditure.getMember().getAccount());
+
+			assertThat(expenditureRecommendation).isNotNull();
 		}
 	}
 }
