@@ -28,6 +28,7 @@ import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestPa
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureTodayResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 
@@ -166,6 +167,23 @@ class ExpenditureServiceTest {
 				expenditure.getMember().getAccount());
 
 			assertThat(expenditureRecommendation).isNotNull();
+		}
+	}
+
+	@Nested
+	@DisplayName("오늘 지출 생성")
+	class createExpenditureToday {
+		@Test
+		@DisplayName("오늘 지출 생성 성공")
+		void 오늘_지출_생성_성공() {
+			given(memberRepository.findByAccount(any())).willReturn(Optional.of(expenditure.getMember()));
+			given(expenditureRepository.findAllByMemberId(any())).willReturn(List.of(expenditure));
+			given(budgetRepository.findAllByMemberId(any())).willReturn(List.of(BudgetTestHelper.createBudget()));
+
+			ExpenditureTodayResponse expenditureToday = expenditureService.createExpenditureToday(
+				expenditure.getMember().getAccount());
+
+			assertThat(expenditureToday).isNotNull();
 		}
 	}
 }

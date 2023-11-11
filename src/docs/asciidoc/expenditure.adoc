@@ -87,3 +87,15 @@ Response
 - 200 OK
 
 include::{snippets}/create-expenditure-recommendation/지출_추천_성공/http-response.adoc[]
+
+== 오늘 지출
+
+Request
+
+include::{snippets}/create-expenditure-today/오늘_지출_생성_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/create-expenditure-today/오늘_지출_생성_성공/http-response.adoc[]
