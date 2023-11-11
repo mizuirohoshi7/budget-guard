@@ -233,6 +233,11 @@ public class ExpenditureService {
 		// 사용자의 지출 목록을 조회한다.
 		List<Expenditure> expenditures = expenditureRepository.findAllByMemberId(member.getId());
 
+		// 지출 목록 중 일자가 오늘이 아닌 지출은 제외한다.
+		expenditures = expenditures.stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().equals(LocalDate.now()))
+			.collect(Collectors.toList());
+
 		// 지출 총 합계를 계산한다.
 		Integer totalAmount = calculateTotalAmount(expenditures);
 
