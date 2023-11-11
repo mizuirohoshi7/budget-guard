@@ -26,6 +26,7 @@ import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestPa
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureTodayResponse;
 import com.budgetguard.global.config.security.TokenManager;
 import com.budgetguard.global.format.ApiResponse;
 
@@ -157,6 +158,26 @@ public class ExpenditureController {
 			account);
 
 		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureRecommendation));
+	}
+
+	/**
+	 * 오늘 지출 정보를 생성한다.
+	 *
+	 * @param token JWT 토큰
+	 * @return 오늘 지출 정보
+	 */
+	@GetMapping("/today")
+	public ResponseEntity<ApiResponse> createExpenditureToday(
+		@RequestHeader(AUTHORIZATION) String token
+	) {
+		// 토큰에서 사용자 계정명을 추출한다.
+		String account = tokenManager.getAccountFromToken(token);
+
+		// 오늘 지출 정보를 생성한다.
+		ExpenditureTodayResponse expenditureToday = expenditureService.createExpenditureToday(
+			account);
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureToday));
 	}
 
 	/**

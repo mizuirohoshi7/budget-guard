@@ -31,6 +31,7 @@ import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureTodayResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.global.config.security.TokenManager;
 import com.budgetguard.global.error.BusinessException;
@@ -266,6 +267,42 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 			given(expenditureService.createExpenditureRecommendation(any())).willReturn(expenditureRecommendation);
 
 			mockMvc.perform(get(EXPENDITURE_URL + "/recommendation")
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
+	}
+
+	@Nested
+	@DisplayName("오늘 지출 생성")
+	class createExpenditureToday {
+		@Test
+		@DisplayName("오늘 지출 생성 성공")
+		void 오늘_지출_생성_성공() throws Exception {
+			given(tokenManager.getAccountFromToken(any())).willReturn("account");
+			ExpenditureTodayResponse expenditureToday = ExpenditureTodayResponse.builder()
+				.totalAmount(10000)
+				.amountPerCategory(Map.of(
+					CategoryName.FOOD, 5000,
+					CategoryName.TRANSPORTATION, 3000,
+					CategoryName.ENTERTAINMENT, 2000
+				))
+				.properTotalAmount(20000)
+				.properAmountPerCategory(Map.of(
+					CategoryName.FOOD, 10000,
+					CategoryName.TRANSPORTATION, 6000,
+					CategoryName.ENTERTAINMENT, 4000
+				))
+				.dangerRates(Map.of(
+					CategoryName.FOOD, 50,
+					CategoryName.TRANSPORTATION, 50,
+					CategoryName.ENTERTAINMENT, 50
+				))
+				.build();
+			given(expenditureService.createExpenditureToday(any())).willReturn(expenditureToday);
+
+			mockMvc.perform(get(EXPENDITURE_URL + "/today")
 					.contentType(APPLICATION_JSON)
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 				)

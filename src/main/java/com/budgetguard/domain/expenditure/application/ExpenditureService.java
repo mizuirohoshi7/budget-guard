@@ -24,6 +24,7 @@ import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureTodayResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
 import com.budgetguard.domain.member.dao.MemberRepository;
 import com.budgetguard.domain.member.entity.Member;
@@ -177,7 +178,7 @@ public class ExpenditureService {
 	/**
 	 * 오늘 지출 추천을 반환한다.
 	 *
-	 * @param account 사용자 계정
+	 * @param account 사용자 계정명
 	 * @return 지출 추천
 	 */
 	public ExpenditureRecommendationResponse createExpenditureRecommendation(String account) {
@@ -194,24 +195,74 @@ public class ExpenditureService {
 		Integer todayBudget = calculateTodayBudget(member);
 
 		// 오늘 지출 가능한 총액을 예산 비율만큼 나누어 지출 추천으로 만든다.
-		Map<CategoryName, Integer> amountPerCategory = categoryRates.entrySet().stream()
-			.collect(Collectors.toMap(
-				Map.Entry::getKey,
-				entry -> (int) (todayBudget * entry.getValue()) / 100 * 100 // 100원 단위로 반올림
-			));
+		Map<CategoryName, Integer> amountPerCategory = calculateAmountPerCategoryByRates(categoryRates, todayBudget);
 
 		// 지출 추천 중 최소 금액보다 적은 지출은 최소 금액으로 설정한다.
 		amountPerCategory.entrySet().stream()
 			.filter(entry -> entry.getValue() < MINIMUM_EXPENDITURE_AMOUNT)
 			.forEach(entry -> entry.setValue(MINIMUM_EXPENDITURE_AMOUNT));
 
+		// 최소 금액으로 변경될 여지가 있으므로 오늘 지출 가능한 총액을 갱신한다.
+		int updatedTodayBudget = amountPerCategory.values().stream()
+			.mapToInt(Integer::intValue)
+			.sum();
+
 		// 지출 추천 메시지를 생성한다.
 		String expenditureMessage = createExpenditureMessage(member);
 
 		return ExpenditureRecommendationResponse.builder()
-			.totalAmount(todayBudget)
+			.totalAmount(updatedTodayBudget)
 			.amountPerCategory(amountPerCategory)
 			.expenditureMessage(expenditureMessage)
+			.build();
+	}
+
+	/**
+	 * 오늘 지출 정보를 생성한다.
+	 *
+	 * @param account 사용자 계정명
+	 * @return 오늘 지출 정보
+	 */
+	public ExpenditureTodayResponse createExpenditureToday(String account) {
+
+		// 요청한 사용자를 조회한다.
+		Member member = memberRepository.findByAccount(account).orElseThrow(
+			() -> new BusinessException(account, "account", MEMBER_NOT_FOUND)
+		);
+
+		// 사용자의 지출 목록을 조회한다.
+		List<Expenditure> expenditures = expenditureRepository.findAllByMemberId(member.getId());
+
+		// 지출 목록 중 일자가 오늘이 아닌 지출은 제외한다.
+		expenditures = expenditures.stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().equals(LocalDate.now()))
+			.collect(Collectors.toList());
+
+		// 지출 총 합계를 계산한다.
+		Integer totalAmount = calculateTotalAmount(expenditures);
+
+		// 카테고리별 지출 합계를 계산한다.
+		Map<CategoryName, Integer> amountPerCategory = calculateAmountPerCategory(expenditures);
+
+		// 사용자의 카테고리별 예산 비율을 계산한다.
+		Map<CategoryName, Double> categoryRates = calculateCategoryRates(member);
+
+		// 현재 남아있는 예산을 이번 달의 남은 일수로 나누어 적절 지출 가능한 총액을 구한다.
+		Integer properTotalAmount = calculateTodayBudget(member);
+
+		// 적절 지출 총액을 예산 비율만큼 나누어 카테고리 별 적절 지출 금액을 만든다.
+		Map<CategoryName, Integer> properAmountPerCategory = calculateAmountPerCategoryByRates(categoryRates,
+			properTotalAmount);
+
+		// 위험도를 계산한다.
+		Map<CategoryName, Integer> dangerRates = calculateDangerRates(amountPerCategory, properAmountPerCategory);
+
+		return ExpenditureTodayResponse.builder()
+			.totalAmount(totalAmount)
+			.amountPerCategory(amountPerCategory)
+			.properTotalAmount(properTotalAmount)
+			.properAmountPerCategory(properAmountPerCategory)
+			.dangerRates(dangerRates)
 			.build();
 	}
 
@@ -283,6 +334,22 @@ public class ExpenditureService {
 	}
 
 	/**
+	 * 카테고리별 예산 비율을 기준으로 예산 총액을 나누어 카테고리별 지출액을 계산한다.
+	 *
+	 * @param categoryRates 카테고리별 예산 비율
+	 * @param budget 예산 총액
+	 * @return 카테고리별 지출액
+	 */
+	private Map<CategoryName, Integer> calculateAmountPerCategoryByRates(Map<CategoryName, Double> categoryRates,
+		int budget) {
+		return categoryRates.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> (int) (budget * entry.getValue()) / 100 * 100 // 100원 단위로 반올림
+			));
+	}
+
+	/**
 	 * 지출 추천 메시지를 생성한다.
 	 * ((예산 총액 - 지출 총액) / 예산 총액)) / (남은 일수 / 해당 달의 총 일수)를 기준으로 삼아서 메시지를 생성한다.
 	 *
@@ -310,5 +377,21 @@ public class ExpenditureService {
 			return NOT_BAD.getMessage();
 		}
 		return OVER_SPENDING.getMessage();
+	}
+
+	/**
+	 * 카테고리별 적정 금액, 지출금액의 차이인 위험도를 계산한다.
+	 *
+	 * @param amountPerCategory 카테고리별 지출 금액
+	 * @param properAmountPerCategory 카테고리별 적정 금액
+	 * @return 카테고리별 위험도 (퍼센티지)
+	 */
+	private Map<CategoryName, Integer> calculateDangerRates(Map<CategoryName, Integer> amountPerCategory,
+		Map<CategoryName, Integer> properAmountPerCategory) {
+		return amountPerCategory.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> (int) ((double) entry.getValue() / properAmountPerCategory.get(entry.getKey())) * 100
+			));
 	}
 }
