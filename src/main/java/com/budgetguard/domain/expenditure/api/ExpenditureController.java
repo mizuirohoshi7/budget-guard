@@ -24,7 +24,9 @@ import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestPa
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
+import com.budgetguard.global.config.security.TokenManager;
 import com.budgetguard.global.format.ApiResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ public class ExpenditureController {
 
 	private final ExpenditureService expenditureService;
 	private final AuthService authService;
+	private final TokenManager tokenManager; // 토큰에서 사용자 정보를 가져오기 위해 사용
 
 	/**
 	 * 지출을 생성한다.
@@ -134,6 +137,26 @@ public class ExpenditureController {
 		// 지출 목록을 검색하여 반환한다.
 		ExpenditureSearchResponse searchResponse = expenditureService.searchExpenditures(searchCond);
 		return ResponseEntity.ok(ApiResponse.toSuccessForm(searchResponse));
+	}
+
+	/**
+	 * 오늘 지출 금액을 추천받는다.
+	 *
+	 * @param token JWT 토큰
+	 * @return 지출 추천 정보
+	 */
+	@GetMapping("/recommendation")
+	public ResponseEntity<ApiResponse> createExpenditureRecommendation(
+		@RequestHeader(AUTHORIZATION) String token
+	) {
+		// 토큰에서 사용자 계정명을 추출한다.
+		String account = tokenManager.getAccountFromToken(token);
+
+		// 지출 추천 정보를 생성한다.
+		ExpenditureRecommendationResponse expenditureRecommendation = expenditureService.createExpenditureRecommendation(
+			account);
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureRecommendation));
 	}
 
 	/**

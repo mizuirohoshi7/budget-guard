@@ -24,12 +24,15 @@ import com.budgetguard.domain.auth.application.AuthService;
 import com.budgetguard.domain.budget.constant.CategoryName;
 import com.budgetguard.domain.expenditure.ExpenditureTestHelper;
 import com.budgetguard.domain.expenditure.application.ExpenditureService;
+import com.budgetguard.domain.expenditure.constant.ExpenditureMessage;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
 import com.budgetguard.domain.expenditure.entity.Expenditure;
+import com.budgetguard.global.config.security.TokenManager;
 import com.budgetguard.global.error.BusinessException;
 import com.budgetguard.global.error.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,6 +50,9 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 
 	@MockBean
 	AuthService authService;
+
+	@MockBean
+	TokenManager tokenManager;
 
 	@Autowired
 	ObjectMapper mapper;
@@ -236,6 +242,32 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 					.contentType(APPLICATION_JSON)
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 					.params(param)
+				)
+				.andExpect(status().isOk());
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 추천")
+	class createExpenditureRecommendation {
+		@Test
+		@DisplayName("지출 추천 성공")
+		void 지출_추천_성공() throws Exception {
+			given(tokenManager.getAccountFromToken(any())).willReturn("account");
+			ExpenditureRecommendationResponse expenditureRecommendation = ExpenditureRecommendationResponse.builder()
+				.totalAmount(10000)
+				.amountPerCategory(Map.of(
+					CategoryName.FOOD, 5000,
+					CategoryName.TRANSPORTATION, 3000,
+					CategoryName.ENTERTAINMENT, 2000
+				))
+				.expenditureMessage(ExpenditureMessage.GREAT.getMessage())
+				.build();
+			given(expenditureService.createExpenditureRecommendation(any())).willReturn(expenditureRecommendation);
+
+			mockMvc.perform(get(EXPENDITURE_URL + "/recommendation")
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 				)
 				.andExpect(status().isOk());
 		}
