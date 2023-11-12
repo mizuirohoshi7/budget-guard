@@ -347,7 +347,7 @@ public class ExpenditureService {
 
 		// 지난 요일 대비 이번달 지출 총 액의 비율을 구한다.
 		int totalRate = (int) ((double) calculateTotalAmount(expendituresOfToday) /
-			calculateTotalAmount(expendituresOfLastDayOfWeek) * 100);
+			calculateTotalAmount(expendituresOfLastDayOfWeek) / expendituresOfLastDayOfWeek.size() * 100);
 
 		// 지난 요일 대비 이번 달 카테고리별 지출 총 액의 비율을 구한다.
 		Map<CategoryName, Integer> lastDayOfWeekExpenditureAmounts = calculateAmountPerCategory(expendituresOfLastDayOfWeek);
@@ -356,7 +356,46 @@ public class ExpenditureService {
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
 				entry -> (int) ((double) thisDayOfWeekExpenditureAmounts.get(entry.getKey()) /
-					entry.getValue() * 100)
+					entry.getValue() / expendituresOfLastDayOfWeek.size() * 100)
+			));
+
+		return ExpenditureRateResponse.builder()
+			.totalRate(totalRate)
+			.ratePerCategory(ratePerCategory)
+			.build();
+	}
+
+	/**
+	 * 다른 사용자 대비 총액, 카테고리 별 소비율을 생성한다.
+	 *
+	 * @param account 사용자 계정명
+	 * @return 다른 사용자 대비 소비율
+	 */
+	public ExpenditureRateResponse createOtherMemberExpenditureRate(String account) {
+
+		// 요청한 사용자를 조회한다.
+		Member member = memberRepository.findByAccount(account).orElseThrow(
+			() -> new BusinessException(account, "account", MEMBER_NOT_FOUND)
+		);
+
+		// 사용자의 지출 목록을 조회한다.
+		List<Expenditure> expenditures = expenditureRepository.findAllByMemberId(member.getId());
+
+		// 다른 사용자의 지출 목록을 조회한다.
+		List<Expenditure> otherExpenditures = expenditureRepository.findAll();
+
+		// 다른 사용자 대비 이번 달 지출 총 액의 비율을 구한다.
+		int totalRate = (int) ((double) calculateTotalAmount(expenditures) /
+			calculateTotalAmount(otherExpenditures) / otherExpenditures.size() * 100);
+
+		// 다른 사용자 대비 이번 달 카테고리별 지출 총 액의 비율을 구한다.
+		Map<CategoryName, Integer> otherMemberExpenditureAmounts = calculateAmountPerCategory(otherExpenditures);
+		Map<CategoryName, Integer> thisMemberExpenditureAmounts = calculateAmountPerCategory(expenditures);
+		Map<CategoryName, Integer> ratePerCategory = otherMemberExpenditureAmounts.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> (int) ((double) thisMemberExpenditureAmounts.get(entry.getKey()) /
+					entry.getValue() / otherExpenditures.size() * 100)
 			));
 
 		return ExpenditureRateResponse.builder()

@@ -214,5 +214,17 @@ class ExpenditureServiceTest {
 
 			assertThat(expenditureRate).isNotNull();
 		}
+
+		@Test
+		@DisplayName("다른 사용자 대비 통계 생성 성공")
+		void 다른_사용자_대비_통계_생성_성공() {
+			given(memberRepository.findByAccount(any())).willReturn(Optional.of(expenditure.getMember()));
+			given(expenditureRepository.findAllByMemberId(any())).willReturn(List.of(expenditure));
+
+			ExpenditureRateResponse expenditureRate = expenditureService.createOtherMemberExpenditureRate(
+				expenditure.getMember().getAccount());
+
+			assertThat(expenditureRate).isNotNull();
+		}
 	}
 }
