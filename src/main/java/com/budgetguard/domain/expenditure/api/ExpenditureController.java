@@ -195,7 +195,26 @@ public class ExpenditureController {
 		String account = tokenManager.getAccountFromToken(token);
 
 		// 월별 지출 비율 정보를 생성한다.
-		ExpenditureRateResponse expenditureRate = expenditureService.createExpenditureRate(account);
+		ExpenditureRateResponse expenditureRate = expenditureService.createExpenditureMonthlyRate(account);
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureRate));
+	}
+
+	/**
+	 * 지난 요일 대비 총액, 카테고리 별 소비율을 생성한다.
+	 *
+	 * @param token JWT 토큰
+	 * @return 지난 요일 대비 소비율
+	 */
+	@GetMapping("/day-of-week-rate")
+	public ResponseEntity<ApiResponse> createExpenditureDayOfWeekRate(
+		@RequestHeader(AUTHORIZATION) String token
+	) {
+		// 토큰에서 사용자 계정명을 추출한다.
+		String account = tokenManager.getAccountFromToken(token);
+
+		// 요일별 지출 비율 정보를 생성한다.
+		ExpenditureRateResponse expenditureRate = expenditureService.createExpenditureDayOfWeekRate(account);
 
 		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureRate));
 	}

@@ -326,9 +326,30 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 				))
 				.build();
 			given(tokenManager.getAccountFromToken(any())).willReturn("account");
-			given(expenditureService.createExpenditureRate(any())).willReturn(expenditureRate);
+			given(expenditureService.createExpenditureMonthlyRate(any())).willReturn(expenditureRate);
 
 			mockMvc.perform(get(EXPENDITURE_URL + "/monthly-rate")
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
+
+		@Test
+		@DisplayName("지난 요일 대비 통계 생성 성공")
+		void 지난_요일_대비_통계_생성_성공() throws Exception {
+			ExpenditureRateResponse expenditureRate = ExpenditureRateResponse.builder()
+				.totalRate(120)
+				.ratePerCategory(Map.of(
+					CategoryName.FOOD, 160,
+					CategoryName.TRANSPORTATION, 70,
+					CategoryName.ENTERTAINMENT, 60
+				))
+				.build();
+			given(tokenManager.getAccountFromToken(any())).willReturn("account");
+			given(expenditureService.createExpenditureDayOfWeekRate(any())).willReturn(expenditureRate);
+
+			mockMvc.perform(get(EXPENDITURE_URL + "/day-of-week-rate")
 					.contentType(APPLICATION_JSON)
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 				)
