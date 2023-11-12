@@ -2,13 +2,9 @@ package com.budgetguard.domain.expenditure.application;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
-import static org.springframework.http.MediaType.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
 
 import com.budgetguard.domain.budget.BudgetTestHelper;
 import com.budgetguard.domain.budget.constant.CategoryName;
@@ -202,7 +197,19 @@ class ExpenditureServiceTest {
 			given(memberRepository.findByAccount(any())).willReturn(Optional.of(expenditure.getMember()));
 			given(expenditureRepository.findAllByMemberId(any())).willReturn(List.of(expenditure));
 
-			ExpenditureRateResponse expenditureRate = expenditureService.createExpenditureRate(
+			ExpenditureRateResponse expenditureRate = expenditureService.createExpenditureMonthlyRate(
+				expenditure.getMember().getAccount());
+
+			assertThat(expenditureRate).isNotNull();
+		}
+
+		@Test
+		@DisplayName("지난 요일 대비 통계 생성 성공")
+		void 지난_요일_대비_통계_생성_성공() {
+			given(memberRepository.findByAccount(any())).willReturn(Optional.of(expenditure.getMember()));
+			given(expenditureRepository.findAllByMemberId(any())).willReturn(List.of(expenditure));
+
+			ExpenditureRateResponse expenditureRate = expenditureService.createExpenditureDayOfWeekRate(
 				expenditure.getMember().getAccount());
 
 			assertThat(expenditureRate).isNotNull();

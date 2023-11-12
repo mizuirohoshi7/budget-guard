@@ -267,7 +267,13 @@ public class ExpenditureService {
 			.build();
 	}
 
-	public ExpenditureRateResponse createExpenditureRate(String account) {
+	/**
+	 * 지난 달 대비 총액, 카테고리 별 소비율을 생성한다.
+	 *
+	 * @param account 사용자 계정명
+	 * @return 지난 달 대비 소비율
+	 */
+	public ExpenditureRateResponse createExpenditureMonthlyRate(String account) {
 
 		// 요청한 사용자를 조회한다.
 		Member member = memberRepository.findByAccount(account).orElseThrow(
@@ -302,6 +308,54 @@ public class ExpenditureService {
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
 				entry -> (int) ((double) thisMonthExpenditureAmounts.get(entry.getKey()) /
+					entry.getValue() * 100)
+			));
+
+		return ExpenditureRateResponse.builder()
+			.totalRate(totalRate)
+			.ratePerCategory(ratePerCategory)
+			.build();
+	}
+
+	/**
+	 * 지난 요일 대비 총액, 카테고리 별 소비율을 생성한다.
+	 *
+	 * @param account 사용자 계정명
+	 * @return 지난 요일 대비 소비율
+	 */
+	public ExpenditureRateResponse createExpenditureDayOfWeekRate(String account) {
+
+		// 요청한 사용자를 조회한다.
+		Member member = memberRepository.findByAccount(account).orElseThrow(
+			() -> new BusinessException(account, "account", MEMBER_NOT_FOUND)
+		);
+
+		// 사용자의 지출 목록을 조회한다.
+		List<Expenditure> expenditures = expenditureRepository.findAllByMemberId(member.getId());
+
+		// 오늘과 같은 요일의 지난 지출 목록을 조회한다.
+		List<Expenditure> expendituresOfLastDayOfWeek = expenditures.stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().getDayOfWeek() ==
+				LocalDate.now().getDayOfWeek())
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().isBefore(LocalDate.now()))
+			.toList();
+
+		// 오늘의 지출 목록을 조회한다.
+		List<Expenditure> expendituresOfToday = expenditures.stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().equals(LocalDate.now()))
+			.toList();
+
+		// 지난 요일 대비 이번달 지출 총 액의 비율을 구한다.
+		int totalRate = (int) ((double) calculateTotalAmount(expendituresOfToday) /
+			calculateTotalAmount(expendituresOfLastDayOfWeek) * 100);
+
+		// 지난 요일 대비 이번 달 카테고리별 지출 총 액의 비율을 구한다.
+		Map<CategoryName, Integer> lastDayOfWeekExpenditureAmounts = calculateAmountPerCategory(expendituresOfLastDayOfWeek);
+		Map<CategoryName, Integer> thisDayOfWeekExpenditureAmounts = calculateAmountPerCategory(expendituresOfToday);
+		Map<CategoryName, Integer> ratePerCategory = lastDayOfWeekExpenditureAmounts.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> (int) ((double) thisDayOfWeekExpenditureAmounts.get(entry.getKey()) /
 					entry.getValue() * 100)
 			));
 
