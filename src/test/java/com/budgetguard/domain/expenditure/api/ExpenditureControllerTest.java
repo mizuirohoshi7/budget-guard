@@ -28,6 +28,7 @@ import com.budgetguard.domain.expenditure.constant.ExpenditureMessage;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestParam;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureRateResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
@@ -303,6 +304,31 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 			given(expenditureService.createExpenditureToday(any())).willReturn(expenditureToday);
 
 			mockMvc.perform(get(EXPENDITURE_URL + "/today")
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
+	}
+
+	@Nested
+	@DisplayName("지출 통계")
+	class createExpenditureRate {
+		@Test
+		@DisplayName("지난 달 대비 통계 생성 성공")
+		void 지난_달_대비_통계_생성_성공() throws Exception {
+			ExpenditureRateResponse expenditureRate = ExpenditureRateResponse.builder()
+				.totalRate(50)
+				.ratePerCategory(Map.of(
+					CategoryName.FOOD, 50,
+					CategoryName.TRANSPORTATION, 50,
+					CategoryName.ENTERTAINMENT, 50
+				))
+				.build();
+			given(tokenManager.getAccountFromToken(any())).willReturn("account");
+			given(expenditureService.createExpenditureRate(any())).willReturn(expenditureRate);
+
+			mockMvc.perform(get(EXPENDITURE_URL + "/monthly-rate")
 					.contentType(APPLICATION_JSON)
 					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
 				)
