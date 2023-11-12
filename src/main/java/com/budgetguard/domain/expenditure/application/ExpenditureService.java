@@ -378,11 +378,15 @@ public class ExpenditureService {
 			() -> new BusinessException(account, "account", MEMBER_NOT_FOUND)
 		);
 
-		// 사용자의 지출 목록을 조회한다.
-		List<Expenditure> expenditures = expenditureRepository.findAllByMemberId(member.getId());
+		// 사용자의 오늘 지출 목록을 조회한다.
+		List<Expenditure> expenditures = expenditureRepository.findAllByMemberId(member.getId()).stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().equals(LocalDate.now()))
+			.toList();;
 
-		// 다른 사용자의 지출 목록을 조회한다.
-		List<Expenditure> otherExpenditures = expenditureRepository.findAll();
+		// 다른 사용자의 오늘 지출 목록을 조회한다.
+		List<Expenditure> otherExpenditures = expenditureRepository.findAll().stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().equals(LocalDate.now()))
+			.toList();
 
 		// 다른 사용자 대비 이번 달 지출 총 액의 비율을 구한다.
 		int totalRate = (int) ((double) calculateTotalAmount(expenditures) /
