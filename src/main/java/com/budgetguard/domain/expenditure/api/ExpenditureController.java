@@ -24,6 +24,7 @@ import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestPa
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureRateResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureTodayResponse;
@@ -178,6 +179,25 @@ public class ExpenditureController {
 			account);
 
 		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureToday));
+	}
+
+	/**
+	 * 지난 달 대비 총액, 카테고리 별 소비율을 생성한다.
+	 *
+	 * @param token JWT 토큰
+	 * @return 지난 달 대비 소비율
+	 */
+	@GetMapping("/monthly-rate")
+	public ResponseEntity<ApiResponse> createExpenditureMonthlyRate(
+		@RequestHeader(AUTHORIZATION) String token
+	) {
+		// 토큰에서 사용자 계정명을 추출한다.
+		String account = tokenManager.getAccountFromToken(token);
+
+		// 월별 지출 비율 정보를 생성한다.
+		ExpenditureRateResponse expenditureRate = expenditureService.createExpenditureRate(account);
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureRate));
 	}
 
 	/**

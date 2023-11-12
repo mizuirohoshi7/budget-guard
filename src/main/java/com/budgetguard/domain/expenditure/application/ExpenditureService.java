@@ -21,6 +21,7 @@ import com.budgetguard.domain.expenditure.dto.request.ExpenditureCreateRequestPa
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureSearchCond;
 import com.budgetguard.domain.expenditure.dto.request.ExpenditureUpdateRequestParam;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureDetailResponse;
+import com.budgetguard.domain.expenditure.dto.response.ExpenditureRateResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureRecommendationResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSearchResponse;
 import com.budgetguard.domain.expenditure.dto.response.ExpenditureSimpleResponse;
@@ -263,6 +264,50 @@ public class ExpenditureService {
 			.properTotalAmount(properTotalAmount)
 			.properAmountPerCategory(properAmountPerCategory)
 			.dangerRates(dangerRates)
+			.build();
+	}
+
+	public ExpenditureRateResponse createExpenditureRate(String account) {
+
+		// 요청한 사용자를 조회한다.
+		Member member = memberRepository.findByAccount(account).orElseThrow(
+			() -> new BusinessException(account, "account", MEMBER_NOT_FOUND)
+		);
+
+		// 사용자의 지출 목록을 조회한다.
+		List<Expenditure> expenditures = expenditureRepository.findAllByMemberId(member.getId());
+
+		// 지난 달의 오늘까지의 지출 목록을 조회한다.
+		List<Expenditure> expendituresOfLastMonth = expenditures.stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().getMonthValue() ==
+				LocalDate.now().minusMonths(1).getMonthValue())
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().getDayOfMonth() <=
+				LocalDate.now().getDayOfMonth())
+			.toList();
+
+		// 이번 달의 지출 목록을 조회한다.
+		List<Expenditure> expendituresOfThisMonth = expenditures.stream()
+			.filter(expenditure -> expenditure.getCreatedTime().toLocalDate().getMonthValue() ==
+				LocalDate.now().getMonthValue())
+			.toList();
+
+		// 지난 달 대비 이번 달 지출 총 액의 비율을 구한다.
+		int totalRate = (int) ((double) calculateTotalAmount(expendituresOfThisMonth) /
+			calculateTotalAmount(expendituresOfLastMonth) * 100);
+
+		// 지난 달 대비 이번 달 카테고리별 지출 총 액의 비율을 구한다.
+		Map<CategoryName, Integer> lastMonthExpenditureAmounts = calculateAmountPerCategory(expendituresOfThisMonth);
+		Map<CategoryName, Integer> thisMonthExpenditureAmounts = calculateAmountPerCategory(expendituresOfThisMonth);
+		Map<CategoryName, Integer> ratePerCategory = lastMonthExpenditureAmounts.entrySet().stream()
+			.collect(Collectors.toMap(
+				Map.Entry::getKey,
+				entry -> (int) ((double) thisMonthExpenditureAmounts.get(entry.getKey()) /
+					entry.getValue() * 100)
+			));
+
+		return ExpenditureRateResponse.builder()
+			.totalRate(totalRate)
+			.ratePerCategory(ratePerCategory)
 			.build();
 	}
 
