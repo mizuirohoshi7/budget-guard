@@ -124,3 +124,15 @@ Response
 - 200 OK
 
 include::{snippets}/create-expenditure-rate/지난_요일_대비_통계_생성_성공/http-response.adoc[]
+
+== 다른 사용자 대비 지출 통계
+
+Request
+
+include::{snippets}/create-expenditure-rate/다른_사용자_대비_통계_생성_성공/http-request.adoc[]
+
+Response
+
+- 200 OK
+
+include::{snippets}/create-expenditure-rate/다른_사용자_대비_통계_생성_성공/http-response.adoc[]

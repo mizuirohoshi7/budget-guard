@@ -355,5 +355,26 @@ class ExpenditureControllerTest extends AbstractRestDocsTest {
 				)
 				.andExpect(status().isOk());
 		}
+
+		@Test
+		@DisplayName("다른 사용자 대비 통계 생성 성공")
+		void 다른_사용자_대비_통계_생성_성공() throws Exception {
+			ExpenditureRateResponse expenditureRate = ExpenditureRateResponse.builder()
+				.totalRate(200)
+				.ratePerCategory(Map.of(
+					CategoryName.FOOD, 200,
+					CategoryName.TRANSPORTATION, 200,
+					CategoryName.ENTERTAINMENT, 200
+				))
+				.build();
+			given(tokenManager.getAccountFromToken(any())).willReturn("account");
+			given(expenditureService.createOtherMemberExpenditureRate(any())).willReturn(expenditureRate);
+
+			mockMvc.perform(get(EXPENDITURE_URL + "/other-member-rate")
+					.contentType(APPLICATION_JSON)
+					.header(HttpHeaders.AUTHORIZATION, JWT_TOKEN)
+				)
+				.andExpect(status().isOk());
+		}
 	}
 }

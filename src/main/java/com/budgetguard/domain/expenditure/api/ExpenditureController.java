@@ -220,6 +220,25 @@ public class ExpenditureController {
 	}
 
 	/**
+	 * 다른 사용자 대비 소비율을 생성한다.
+	 *
+	 * @param token JWT 토큰
+	 * @return 다른 사용자 대비 소비율
+	 */
+	@GetMapping("/other-member-rate")
+	public ResponseEntity<ApiResponse> createExpenditureOtherMemberRate(
+		@RequestHeader(AUTHORIZATION) String token
+	) {
+		// 토큰에서 사용자 계정명을 추출한다.
+		String account = tokenManager.getAccountFromToken(token);
+
+		// 다른 사용자 대비 소비율을 생성한다.
+		ExpenditureRateResponse expenditureRate = expenditureService.createOtherMemberExpenditureRate(account);
+
+		return ResponseEntity.ok(ApiResponse.toSuccessForm(expenditureRate));
+	}
+
+	/**
 	 * 요청 파라미터를 검색 조건으로 변환한다.
 	 * String을 알맞은 타입으로 변환하는 작업도 수행한다.
 	 *
