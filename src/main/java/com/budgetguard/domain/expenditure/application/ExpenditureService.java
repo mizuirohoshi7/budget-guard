@@ -160,6 +160,7 @@ public class ExpenditureService {
 
 		// 지출 목록을 응답 dto로 변환한다.
 		List<ExpenditureSimpleResponse> expenditureSimpleResponses = expenditures.stream()
+			.filter(expenditure -> !expenditure.getIsExcluded())
 			.map(ExpenditureSimpleResponse::new)
 			.collect(Collectors.toList());
 
