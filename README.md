@@ -36,7 +36,7 @@
 
 ![image](https://github.com/mizuirohoshi7/budget-guard/assets/142835195/2f24fa80-3ef5-49ad-b232-a36eed2f5115)
 
-https://github.com/users/mizuirohoshi7/projects/2/views/1
+[링크](https://github.com/users/mizuirohoshi7/projects/2/views/1)
 
 ## 구현 기능 목록
 
@@ -101,13 +101,13 @@ https://github.com/users/mizuirohoshi7/projects/2/views/1
 
 **Spring Rest Docs 기반 API 명세서**
 
-https://mizuirohoshi7.github.io/budget-guard/
+[링크](https://mizuirohoshi7.github.io/budget-guard/)
 
 ![image](https://github.com/mizuirohoshi7/budget-guard/assets/142835195/db7a0775-79d2-413e-ae4c-8c4d3b630eb2)
 
 ## 테스트
 
-### ✅ 49/49 (1초 832ms)
+### ✅ 49/49 (2초 33ms)
 
 ![image](https://github.com/wanted-preonboarding-team-m/02_geoRecommendEats/assets/57309311/c8265e01-9e0d-417f-865b-408e7e672322)
 
