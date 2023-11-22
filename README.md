@@ -93,8 +93,6 @@
 
 ## ERD
 
-**ERD Cloud**
-
 ![image](https://github.com/mizuirohoshi7/budget-guard/assets/142835195/02741c8b-def1-40b3-ab2a-02fa47f6456b)
 
 ## API 명세
