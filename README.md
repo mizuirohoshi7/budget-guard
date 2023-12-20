@@ -105,8 +105,8 @@
 
 ## 테스트
 
-### ✅ 24/24 (2초 33ms)
+### ✅ 49/49 (1초 84ms)
 
-![image](https://github.com/wanted-preonboarding-team-m/02_geoRecommendEats/assets/57309311/c8265e01-9e0d-417f-865b-408e7e672322)
+![image](https://github.com/mizuirohoshi7/budget-guard/assets/142835195/1323514e-52ed-4b8b-acd2-703d378777bf)
 
 단위 테스트로 각 계층을 분리했습니다.
