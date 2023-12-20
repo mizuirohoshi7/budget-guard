@@ -105,7 +105,7 @@
 
 ## 테스트
 
-### ✅ 49/49 (2초 33ms)
+### ✅ 24/24 (2초 33ms)
 
 ![image](https://github.com/wanted-preonboarding-team-m/02_geoRecommendEats/assets/57309311/c8265e01-9e0d-417f-865b-408e7e672322)
 
