@@ -507,7 +507,7 @@ public class ExpenditureService {
 
 		double moneyRate = (double) remainingBudget / totalBudgetAmount; // 예산 총액 대비 남아있는 예산 비율
 		double dayRate = (double) remainingDays / LocalDate.now().lengthOfMonth(); // 이번 달의 남은 일수 대비 오늘의 비율
-		double score = moneyRate * dayRate; // 지출 추천 점수
+		double score = moneyRate / dayRate; // 지출 추천 점수
 
 		// 지출 추천 점수가 어느정도인지에 따라 메시지를 생성한다.
 		if (score >= GREAT.getScore()) {
